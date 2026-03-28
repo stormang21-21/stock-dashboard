@@ -7,6 +7,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+    <style>
+        .ph-icon { font-size: 1.25rem; }
+        .ph-icon-sm { font-size: 1rem; }
+        .ph-icon-lg { font-size: 1.5rem; }
+        .ph-icon-xl { font-size: 2rem; }
+        .stat-card .ph-icon { font-size: 1.5rem; }
+        .tool-card .ph-icon { font-size: 1.75rem; }
+    </style>
     <style>
         :root {
             --bg-primary: #0a0e17;
@@ -823,7 +832,7 @@
 <body>
     <!-- Mobile Menu Button -->
     <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.mobile-overlay').classList.toggle('active')">
-        ☰
+        <i class="ph ph-list"></i>
     </button>
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active')"></div>
@@ -832,31 +841,31 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <div class="logo-icon">📈</div>
+                <div class="logo-icon"> <i class="ph ph-trend-up"></i></div>
                 <span class="logo-text">TradeVision</span>
             </div>
             
             <nav class="nav-section">
                 <div class="nav-label">Main</div>
                 <a href="/dashboard" class="nav-item active">
-                    <span class="nav-icon">🏠</span>
+                    <span class="nav-icon"> <i class="ph ph-house"></i></span>
                     <span>Dashboard</span>
                 </a>
                 <a href="/analyze" class="nav-item">
-                    <span class="nav-icon">🔍</span>
+                    <span class="nav-icon"> <i class="ph ph-magnifying-glass"></i></span>
                     <span>Analyze</span>
                     <span class="nav-badge">AI</span>
                 </a>
                 <a href="/charts" class="nav-item">
-                    <span class="nav-icon">📊</span>
+                    <span class="nav-icon"> <i class="ph ph-chart-line"></i></span>
                     <span>Charts</span>
                 </a>
                 <a href="/crypto" class="nav-item">
-                    <span class="nav-icon">₿</span>
+                    <span class="nav-icon"> <i class="ph ph-currency-btc"></i></span>
                     <span>Crypto</span>
                 </a>
                 <a href="/global" class="nav-item">
-                    <span class="nav-icon">🌍</span>
+                    <span class="nav-icon"> <i class="ph ph-globe"></i></span>
                     <span>Global Markets</span>
                 </a>
             </nav>
@@ -864,15 +873,15 @@
             <nav class="nav-section">
                 <div class="nav-label">Portfolio</div>
                 <a href="/portfolio" class="nav-item">
-                    <span class="nav-icon">💼</span>
+                    <span class="nav-icon"> <i class="ph ph-briefcase"></i></span>
                     <span>Tracker</span>
                 </a>
                 <a href="/watchlist" class="nav-item">
-                    <span class="nav-icon">⭐</span>
+                    <span class="nav-icon"> <i class="ph ph-star"></i></span>
                     <span>Watchlist</span>
                 </a>
                 <a href="/backtest" class="nav-item">
-                    <span class="nav-icon">🧪</span>
+                    <span class="nav-icon"> <i class="ph ph-flask"></i></span>
                     <span>Backtest</span>
                 </a>
             </nav>
@@ -880,18 +889,18 @@
             <nav class="nav-section">
                 <div class="nav-label">AI Agent</div>
                 <a href="/agent" class="nav-item">
-                    <span class="nav-icon">🤖</span>
+                    <span class="nav-icon"> <i class="ph ph-robot"></i></span>
                     <span>Dexter AI</span>
                 </a>
                 <a href="/news" class="nav-item">
-                    <span class="nav-icon">📰</span>
+                    <span class="nav-icon"> <i class="ph ph-newspaper"></i></span>
                     <span>News</span>
                 </a>
             </nav>
             
             <div class="sidebar-footer">
                 <a href="/onboarding" class="nav-item">
-                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-icon"> <i class="ph ph-gear"></i></span>
                     <span>Settings</span>
                 </a>
                 <div class="user-card">
@@ -914,10 +923,10 @@
                 </div>
                 <div class="header-actions">
                     <a href="/analyze" class="btn btn-secondary">
-                        <span>🔍</span> Analyze Stock
+                        <span> <i class="ph ph-magnifying-glass"></i></span> Analyze Stock
                     </a>
                     <a href="/upgrade" class="btn btn-primary">
-                        <span>⚡</span> Upgrade Pro
+                        <span> <i class="ph ph-lightning"></i></span> Upgrade Pro
                     </a>
                 </div>
             </header>
@@ -969,25 +978,25 @@
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card cyan">
-                    <div class="stat-icon">📊</div>
+                    <div class="stat-icon"> <i class="ph ph-chart-line"></i></div>
                     <div class="stat-value">127</div>
                     <div class="stat-label">Stocks Analyzed</div>
                     <span class="stat-change positive">+12 this week</span>
                 </div>
                 <div class="stat-card purple">
-                    <div class="stat-icon">💰</div>
+                    <div class="stat-icon"> <i class="ph ph-money"></i></div>
                     <div class="stat-value">$24.5K</div>
                     <div class="stat-label">Portfolio Value</div>
                     <span class="stat-change positive">+8.3%</span>
                 </div>
                 <div class="stat-card green">
-                    <div class="stat-icon">🎯</div>
+                    <div class="stat-icon"> <i class="ph ph-target"></i></div>
                     <div class="stat-value">73%</div>
                     <div class="stat-label">Win Rate</div>
                     <span class="stat-change positive">+5%</span>
                 </div>
                 <div class="stat-card orange">
-                    <div class="stat-icon">⚡</div>
+                    <div class="stat-icon"> <i class="ph ph-lightning"></i></div>
                     <div class="stat-value">42</div>
                     <div class="stat-label">API Calls Left</div>
                     <span class="stat-change">Daily limit</span>
@@ -997,14 +1006,14 @@
             <!-- Quick Actions -->
             <div class="quick-actions">
                 <a href="/analyze" class="quick-action">
-                    <div class="quick-action-icon">🤖</div>
+                    <div class="quick-action-icon"> <i class="ph ph-robot"></i></div>
                     <div class="quick-action-text">
                         <h4>AI Stock Analysis</h4>
                         <p>Get instant buy/sell recommendations</p>
                     </div>
                 </a>
                 <a href="/portfolio" class="quick-action">
-                    <div class="quick-action-icon">💼</div>
+                    <div class="quick-action-icon"> <i class="ph ph-briefcase"></i></div>
                     <div class="quick-action-text">
                         <h4>Track Portfolio</h4>
                         <p>Monitor your positions & P&L</p>
@@ -1021,34 +1030,34 @@
                 <div class="tools-grid">
                     <a href="/analyze" class="tool-card">
                         <span class="tag">POPULAR</span>
-                        <div class="tool-icon">🤖</div>
+                        <div class="tool-icon"> <i class="ph ph-robot"></i></div>
                         <h3>AI Stock Analysis</h3>
                         <p>Get instant buy/sell recommendations powered by Gemini AI with exact price targets and confidence scores.</p>
                     </a>
                     <a href="/charts" class="tool-card">
-                        <div class="tool-icon">📈</div>
+                        <div class="tool-icon"> <i class="ph ph-trend-up"></i></div>
                         <h3>Advanced Charts</h3>
                         <p>Interactive charts with RSI, MACD, Volume analysis. Multiple timeframe support for better decisions.</p>
                     </a>
                     <a href="/crypto" class="tool-card">
                         <span class="tag">LIVE</span>
-                        <div class="tool-icon">₿</div>
+                        <div class="tool-icon"> <i class="ph ph-currency-btc"></i></div>
                         <h3>Crypto Prices</h3>
                         <p>Real-time crypto prices from Binance. 150+ cryptocurrencies with price alerts and portfolio tracking.</p>
                     </a>
                     <a href="/global" class="tool-card">
-                        <div class="tool-icon">🌍</div>
+                        <div class="tool-icon"> <i class="ph ph-globe"></i></div>
                         <h3>Global Markets</h3>
                         <p>Track US, China, Hong Kong, Singapore, Japan markets. Indices, forex, commodities in one place.</p>
                     </a>
                     <a href="/backtest" class="tool-card">
-                        <div class="tool-icon">🧪</div>
+                        <div class="tool-icon"> <i class="ph ph-flask"></i></div>
                         <h3>Strategy Backtest</h3>
                         <p>Test your trading strategies on historical data. Analyze returns, risk, and optimize parameters.</p>
                     </a>
                     <a href="/agent" class="tool-card">
                         <span class="tag">NEW</span>
-                        <div class="tool-icon">🧠</div>
+                        <div class="tool-icon"><i class="ph ph-brain"></i></div></div>
                         <h3>Dexter AI Agent</h3>
                         <p>Research agent that analyzes stocks, fetches news, and provides investment insights autonomously.</p>
                     </a>
