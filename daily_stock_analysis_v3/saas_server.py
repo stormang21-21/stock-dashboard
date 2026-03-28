@@ -304,6 +304,14 @@ async def root():
     raise HTTPException(status_code=404, detail="Landing page not found")
 
 # ============ ONBOARDING ============
+@app.get("/logo.svg")
+async def logo():
+    """Serve logo SVG"""
+    logo_path = Path(__file__).parent / "web" / "logo.svg"
+    if logo_path.exists():
+        return FileResponse(str(logo_path), media_type="image/svg+xml")
+    return Response(status_code=404)
+
 @app.get("/onboarding", response_class=HTMLResponse)
 async def onboarding_page():
     """Onboarding page"""
