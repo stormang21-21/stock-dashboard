@@ -2,1243 +2,592 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="description" content="AI-powered stock analysis platform with 6 global markets. Get instant buy/sell recommendations powered by Gemini AI.">
-    <title>Daily Stock Analysis - AI-Powered Stock Analysis Platform</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TradeVision - AI Stock Analysis</title>
+    <script src="https://unpkg.com/@phosphor-icons/web@2.0.3"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS Variables for easy theming - Professional Financial Theme */
         :root {
-            --primary: #00d4aa;
-            --primary-dark: #00b894;
-            --primary-light: #00f5c4;
-            --secondary: #764ba2;
-            --accent: #f093fb;
-            --dark: #0d1117;
-            --dark-secondary: #161b22;
-            --dark-tertiary: #21262d;
-            --light: #f7fafc;
-            --light-secondary: #f0f4f8;
-            --gray: #8b949e;
-            --gray-dark: #6e7681;
-            --success: #3fb950;
-            --success-bg: rgba(63, 185, 80, 0.15);
-            --warning: #d29922;
-            --warning-bg: rgba(210, 153, 34, 0.15);
-            --danger: #f85149;
-            --danger-bg: rgba(248, 81, 73, 0.15);
-            --info: #58a6ff;
-            --info-bg: rgba(88, 166, 255, 0.15);
-            --gradient: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
-            --gradient-secondary: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-            --shadow: 0 20px 60px rgba(0,0,0,0.3);
-            --shadow-sm: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-md: 0 8px 24px rgba(0,0,0,0.15);
-            --shadow-lg: 0 16px 48px rgba(0,0,0,0.2);
-            --border: #30363d;
-            --border-light: #e1e4e8;
-            --safe-area-top: env(safe-area-inset-top, 44px);
-            --safe-area-bottom: env(safe-area-inset-bottom, 34px);
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #232d42;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: rgba(148, 163, 184, 0.1);
+            --gradient-1: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
+            --gradient-2: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 24px;
         }
 
-        /* Dark mode by default for financial look */
-        @media (prefers-color-scheme: light) {
-            :root {
-                --bg-primary: #0d1117;
-                --bg-secondary: #161b22;
-                --bg-tertiary: #21262d;
-                --text-primary: #f0f6fc;
-                --text-secondary: #8b949e;
-                --text-muted: #6e7681;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Reset & Base */
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { scroll-behavior: smooth; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            line-height: 1.6;
-            color: var(--dark);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            background: #0d1117; /* Dark theme for professional financial look */
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
-        }
-        
-        /* Override for light backgrounds */
-        body.light-theme {
-            background: #f7fafc;
-            color: #1a202c;
+            overflow-x: hidden;
         }
 
-        /* Typography */
-        h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
-        h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
-        h2 { font-size: clamp(1.75rem, 4vw, 2.5rem); }
-        h3 { font-size: clamp(1.25rem, 3vw, 1.75rem); }
-        p { font-size: clamp(1rem, 2.5vw, 1.125rem); color: var(--gray); }
-        
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 max(20px, var(--safe-area-left)) 0 max(20px, var(--safe-area-right));
-        }
-
-        /* Buttons - Touch Friendly */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 16px 28px;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            border: none;
-            min-height: 52px;
-            touch-action: manipulation;
-            white-space: nowrap;
-            overflow: visible;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, #00d4aa 0%, #00b894 100%);
-            color: #0d1117;
-            font-weight: 600;
-            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
-            border-radius: 12px;
-        }
-        .btn-primary:hover, .btn-primary:active {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 40px rgba(0, 212, 170, 0.4);
-        }
-        .btn-secondary {
-            background: transparent;
-            color: #00d4aa;
-            border: 2px solid #00d4aa;
-        }
-        .btn-secondary:hover, .btn-secondary:active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Header */
-        header {
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
+        body::before {
+            content: '';
             position: fixed;
-            width: 100%;
             top: 0;
-            z-index: 1000;
-            padding-top: var(--safe-area-top);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 50% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
-        nav {
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px 24px;
+            background: rgba(10, 14, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
         }
+
         .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #00d4aa;
-            text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
+
         .logo-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, #00d4aa, #00b894);
-            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            background: var(--gradient-1);
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+            color: white;
+            font-size: 1.2rem;
+            -webkit-text-fill-color: initial;
         }
+
         .nav-links {
             display: flex;
-            gap: 8px;
-            list-style: none;
+            gap: 32px;
             align-items: center;
         }
-        .nav-links a {
-            color: #8b949e;
+
+        .nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
+            font-size: 0.9rem;
             font-weight: 500;
-            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover { color: var(--text-primary); }
+
+        .nav-link.active { color: var(--accent-cyan); }
+
+        .nav-pricing {
+            background: var(--gradient-1);
+            color: white;
             padding: 8px 16px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .nav-links a:hover {
-            color: #f0f6fc;
-            background: #21262d;
-        }
-        .nav-links a.cta {
-            background: #00d4aa;
-            color: #0d1117;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 600;
-        }
-        .nav-links a.cta:hover {
-            background: #00f5c4;
-        }
-        }
-        .nav-links a {
-            color: var(--dark);
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            padding: 8px 0;
-        }
-        .nav-links a:hover { color: var(--primary); }
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--dark);
-            padding: 8px;
-            min-width: 44px;
-            min-height: 44px;
         }
 
         /* Hero Section */
         .hero {
-            padding: calc(var(--safe-area-top) + 120px) 0 80px;
-            background: #0d1117;
+            padding: 140px 40px 60px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 20px;
+            background: linear-gradient(180deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        /* Search Bar */
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 60px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 18px 24px;
+            padding-right: 100px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .search-box::placeholder { color: var(--text-muted); }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        .search-shortcut {
+            position: absolute;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-card);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border);
+        }
+
+        /* Stock Cards Section */
+        .stocks-section {
+            padding: 20px 0 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 24px;
+            padding: 0 40px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .scroll-btn {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .scroll-btn:hover {
+            background: var(--bg-card-hover);
+            color: var(--text-primary);
+            border-color: var(--accent-cyan);
+        }
+
+        .stocks-scroll {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding: 20px 40px 40px;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .stocks-scroll::-webkit-scrollbar { display: none; }
+
+        .stock-card {
+            min-width: 220px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            scroll-snap-align: start;
             position: relative;
             overflow: hidden;
         }
-        .hero::before {
+
+        .stock-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             bottom: 0;
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(0, 212, 170, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(88, 166, 255, 0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
-        
-        /* Trust Badges */
-        .trust-badges {
-            display: flex;
-            gap: 24px;
-            justify-content: center;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-        .trust-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: #161b22;
-            padding: 10px 20px;
-            border-radius: 50px;
-            border: 1px solid #30363d;
-            font-size: 13px;
-            color: #8b949e;
-        }
-        .trust-badge-icon {
-            font-size: 16px;
-        }
-        
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-        }
-        .hero-text h1 {
-            margin-bottom: 20px;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .hero-text p {
-            font-size: 1.125rem;
-            margin-bottom: 30px;
-        }
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-        }
-        .hero-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .stat {
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--gray);
-        }
-        .hero-image {
-            position: relative;
-        }
-        .hero-image img {
-            width: 100%;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
-        }
-        
-        /* Dashboard Preview Card - 2026 Trend */
-        .dashboard-preview {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 20px 60px rgba(0, 212, 170, 0.1);
-        }
-        .preview-header {
-            font-size: 14px;
-            color: #8b949e;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #30363d;
-        }
-        .preview-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-        .preview-card {
-            background: #21262d;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .preview-label {
-            display: block;
-            font-size: 12px;
-            color: #8b949e;
-            margin-bottom: 8px;
-        }
-        .preview-value {
-            display: block;
-            font-size: 20px;
-            font-weight: 700;
-            color: #f0f6fc;
-        }
-        .preview-value.positive {
-            color: #3fb950;
-        }
-        .preview-value.negative {
-            color: #f85149;
-        }
-        .preview-footer {
-            font-size: 13px;
-            color: #8b949e;
-            text-align: center;
-            padding-top: 16px;
-            border-top: 1px solid #30363d;
+            background: var(--gradient-1);
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 0;
         }
 
-        /* Features Section */
-        .features {
-            padding: 80px 0;
-            background: #0d1117;
+        .stock-card:hover,
+        .stock-card.active {
+            transform: translateY(-4px);
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
-        .section-header {
-            text-align: center;
-            margin-bottom: 40px;
+
+        .stock-card:hover::before,
+        .stock-card.active::before {
+            opacity: 0.1;
         }
-        .section-header h2 {
-            margin-bottom: 10px;
-            color: #f0f6fc;
-            font-size: 1.75rem;
-        }
-        .section-header p {
-            color: #8b949e;
-            font-size: 1rem;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-top: 40px;
-        }
-        .feature-card {
-            padding: 30px;
-            border-radius: 16px;
-            background: #161b22;
-            border: 1px solid #30363d;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            /* Glassmorphism effect */
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-        .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0, 212, 170, 0.1);
-            border-color: #00d4aa;
-        }
-        .feature-icon {
-            font-size: 2.5rem;
+
+        .stock-card > * { position: relative; z-index: 1; }
+
+        .stock-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
             margin-bottom: 16px;
-            display: inline-block;
-            padding: 12px;
-            background: linear-gradient(135deg, rgba(0, 212, 170, 0.15), rgba(0, 184, 148, 0.1));
-            border-radius: 12px;
-        }
-        .feature-card h3 {
-            margin-bottom: 10px;
-            color: #f0f6fc;
-            font-size: 1.25rem;
-        }
-        .feature-card p {
-            color: #8b949e;
-            font-size: 0.95rem;
-            line-height: 1.6;
         }
 
-        /* Markets Section */
-        .markets {
-            padding: 100px 0;
-            background: var(--gradient);
-            color: white;
-        }
-        .markets h2 {
-            color: white;
-        }
-        .markets p {
-            color: rgba(255,255,255,0.9);
-        }
-        .markets-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            margin-top: 50px;
-        }
-        .market-card {
-            background: rgba(255,255,255,0.1);
-            padding: 25px;
-            border-radius: 15px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .market-card:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-5px);
-        }
-        .market-flag {
-            font-size: 3rem;
-            margin-bottom: 10px;
-        }
-
-        /* Pricing Section */
-        .pricing {
-            padding: 100px 0;
-            background: var(--light);
-        }
-        .pricing-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-        .pricing-card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: var(--shadow-sm);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-        }
-        .pricing-card:hover {
-            transform: translateY(-10px);
-            box-shadow: var(--shadow);
-        }
-        .pricing-card.popular {
-            border: 3px solid var(--primary);
-            transform: scale(1.05);
-        }
-        .pricing-card.popular::before {
-            content: '⭐ Most Popular';
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--gradient);
-            color: white;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .pricing-card h3 {
-            margin-bottom: 10px;
-        }
-        .price {
-            font-size: 3rem;
-            font-weight: 800;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin: 20px 0;
-        }
-        .price span {
-            font-size: 1rem;
-            font-weight: 400;
-            color: var(--gray);
-        }
-        .pricing-features {
-            list-style: none;
-            margin: 30px 0;
-        }
-        .pricing-features li {
-            padding: 10px 0;
-            border-bottom: 1px solid var(--light);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .pricing-features li::before {
-            content: '✓';
-            color: var(--success);
-            font-weight: 700;
-        }
-
-        /* Testimonials */
-        .testimonials {
-            padding: 100px 0;
-            background: white;
-        }
-        .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            margin-top: 50px;
-        }
-        .testimonial-card {
-            padding: 30px;
-            background: var(--light);
-            border-radius: 15px;
-        }
-        .testimonial-text {
-            font-style: italic;
-            margin-bottom: 20px;
-            color: var(--dark);
-        }
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .author-avatar {
-            width: 50px;
-            height: 50px;
+        .stock-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-2);
             border-radius: 50%;
-            background: var(--gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
         }
 
-        /* CTA Section */
-        .cta {
-            padding: 100px 0;
-            background: var(--gradient);
-            color: white;
-            text-align: center;
+        .stock-info h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
         }
-        .cta h2 {
-            color: white;
-            margin-bottom: 20px;
+
+        .stock-info p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
         }
-        .cta p {
-            color: rgba(255,255,255,0.9);
-            font-size: 1.125rem;
-            margin-bottom: 30px;
+
+        .stock-chart-icon {
+            margin-left: auto;
+            color: var(--accent-green);
+            font-size: 1.2rem;
+        }
+
+        .stock-price {
+            font-size: 1.6rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .stock-change {
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stock-change.positive { color: var(--accent-green); }
+        .stock-change.negative { color: var(--accent-red); }
+
+        /* Navigation */
+        .scroll-arrows {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 20px;
         }
 
         /* Footer */
-        footer {
-            background: var(--dark);
-            color: white;
-            padding: 60px 0 30px;
-        }
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-        .footer-col h4 {
-            margin-bottom: 20px;
-            color: white;
-        }
-        .footer-col ul {
-            list-style: none;
-        }
-        .footer-col ul li {
-            margin-bottom: 10px;
-        }
-        .footer-col a {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        .footer-col a:hover {
-            color: white;
-        }
-        .footer-bottom {
+        .footer {
             text-align: center;
-            padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.5);
+            padding: 40px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
         }
 
-        /* Mobile Menu */
-        .mobile-menu-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 20px; }
+            .nav-links { display: none; }
+            .hero { padding: 120px 20px 40px; }
+            .hero-title { font-size: 1.8rem; }
+            .hero-subtitle { font-size: 0.95rem; }
+            .stocks-scroll { padding: 20px; }
+            .stock-card { min-width: 180px; }
+            .section-header { padding: 0 20px; }
+        }
+
+        /* Search Results Dropdown */
+        .search-results {
+            position: absolute;
+            top: 100%;
             left: 0;
             right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 998;
-            backdrop-filter: blur(4px);
-        }
-        .mobile-menu-overlay.active {
-            display: block;
-        }
-
-        /* iPhone 15+ Mobile Optimizations */
-        @media (max-width: 430px) {
-            /* Root variables for mobile */
-            :root {
-                --safe-area-top: 59px;
-                --safe-area-bottom: 34px;
-            }
-            
-            /* Typography */
-            body { font-size: 16px; }
-            h1 { font-size: 1.75rem !important; line-height: 1.15 !important; }
-            h2 { font-size: 1.5rem !important; }
-            h3 { font-size: 1.125rem !important; }
-            p { font-size: 0.9rem !important; }
-            
-            /* Container */
-            .container { padding: 0 16px !important; }
-            
-            /* Spacing */
-            .hero { 
-                padding: calc(var(--safe-area-top) + 40px) 0 40px !important; 
-            }
-            .features, .markets, .pricing, .testimonials, .cta { 
-                padding: 40px 0 !important; 
-            }
-            
-            /* Hero Buttons - Fix cut off */
-            .hero-buttons { 
-                flex-direction: column !important; 
-                gap: 12px !important; 
-                width: 100%;
-            }
-            .hero-buttons .btn { 
-                width: 100% !important; 
-                text-align: center !important;
-                padding: 16px 24px !important;
-                font-size: 1rem !important;
-                height: auto !important;
-                line-height: 1.4 !important;
-            }
-            
-            /* Hero Stats */
-            .hero-stats { 
-                grid-template-columns: repeat(3, 1fr) !important; 
-                gap: 8px !important; 
-                margin-top: 24px !important;
-            }
-            .stat { padding: 12px 8px !important; }
-            .stat-number { font-size: 1.25rem !important; }
-            .stat-label { font-size: 0.65rem !important; }
-            
-            /* Trust Badges */
-            .trust-badges { gap: 8px !important; flex-wrap: wrap; justify-content: center; }
-            .trust-badge { padding: 8px 12px !important; font-size: 11px !important; }
-            
-            /* Layout */
-            .hero-content { 
-                grid-template-columns: 1fr !important; 
-                gap: 24px !important; 
-            }
-            .hero-image { 
-                order: -1 !important; 
-                margin-bottom: 10px;
-            }
-            
-            /* Dashboard Preview - Mobile */
-            .dashboard-preview { padding: 16px !important; }
-            .preview-grid { gap: 10px !important; }
-            .preview-card { padding: 12px !important; }
-            .preview-value { font-size: 16px !important; }
-            
-            /* Features */
-            .features-grid { 
-                grid-template-columns: 1fr !important; 
-                gap: 16px !important; 
-            }
-            .feature-card { padding: 20px !important; }
-            .feature-icon { font-size: 2rem !important; }
-            
-            /* Markets */
-            .markets-grid { 
-                grid-template-columns: repeat(2, 1fr) !important; 
-                gap: 10px !important; 
-            }
-            
-            /* Navigation */
-            nav { 
-                padding: calc(var(--safe-area-top) + 12px) 16px 12px !important; 
-            }
-            .logo { font-size: 1.125rem !important; }
-            .nav-links { 
-                display: none !important; 
-            }
-            
-            /* Forms & Inputs */
-            input, select { 
-                font-size: 16px !important; /* Prevents zoom on iOS */
-                padding: 14px 16px !important;
-            }
-            
-            /* Cards */
-            .pricing-grid { grid-template-columns: 1fr !important; }
-            
-            /* Footer */
-            .footer-grid { grid-template-columns: 1fr !important; }
-        }
-            
-            /* Navigation */
-            nav { padding: calc(var(--safe-area-top) + 15px) 16px 15px !important; }
-            .nav-links { 
-                display: none !important; 
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: white;
-                flex-direction: column !important;
-                justify-content: center;
-                align-items: center;
-                gap: 30px !important;
-                z-index: 999;
-                padding: 100px 20px;
-            }
-            .nav-links.active { display: flex !important; animation: slideIn 0.3s ease; }
-            .nav-links a { font-size: 1.25rem !important; padding: 12px 0 !important; }
-            .mobile-menu-btn { display: block !important; font-size: 1.75rem !important; z-index: 1000; }
-            
-            /* Cards */
-            .feature-card, .pricing-card, .testimonial-card, .market-card {
-                padding: 24px !important;
-                border-radius: 16px !important;
-            }
-            
-            /* Price */
-            .price { font-size: 2.5rem !important; }
-            
-            /* Footer */
-            footer { padding: 40px 20px 20px !important; }
-            
-            /* Container */
-            .container { padding: 0 16px !important; }
-            
-            /* Prevent zoom on iOS */
-            input, select, textarea { font-size: 16px !important; }
-        }
-
-        /* Touch Optimizations */
-        @media (hover: none) and (pointer: coarse) {
-            .feature-card:hover, .pricing-card:hover, .market-card:hover {
-                transform: none !important;
-            }
-        }
-
-        /* Dark Mode Support */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --light: #1a202c;
-                --dark: #f7fafc;
-                --gray: #a0aec0;
-            }
-            body { background: #0f1419 !important; color: #f7fafc !important; }
-            header, .feature-card, .pricing-card, .testimonial-card { background: #1a202c !important; color: #f7fafc !important; }
-            .nav-links a, .footer-col a { color: #f7fafc !important; }
-        }
-
-        /* Reduce Motion */
-        @media (prefers-reduced-motion: reduce) {
-            * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-        }
-
-        /* Animations */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Utility */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            margin-top: 8px;
             overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            border: 0;
+            display: none;
+            z-index: 50;
+        }
+
+        .search-results.active { display: block; }
+
+        .search-result-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-card);
+        }
+
+        .search-result-item .symbol {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .search-result-item .name {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .search-result-item .price {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">📊 Daily Stock Analysis</div>
-                <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">☰</button>
-                <ul class="nav-links" role="menu">
-                    <li role="none"><a href="#features" role="menuitem">Features</a></li>
-                    <li role="none"><a href="#markets" role="menuitem">Markets</a></li>
-                    <li role="none"><a href="#pricing" role="menuitem">Pricing</a></li>
-                    <li role="none"><a href="#testimonials" role="menuitem">Reviews</a></li>
-                    <li role="none"><a href="/onboarding" class="btn btn-primary" style="padding: 10px 25px;" role="menuitem">Get Started</a></li>
-                </ul>
-            </nav>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon"><i class="ph ph-chart-line-up"></i></div>
+            <span>TradeVision</span>
         </div>
-        <div class="mobile-menu-overlay"></div>
-    </header>
+        <div class="nav-links">
+            <a href="#" class="nav-link active">Home</a>
+            <a href="/analyze" class="nav-link">Analyze</a>
+            <a href="/charts" class="nav-link">Charts</a>
+            <a href="/crypto" class="nav-link">Crypto</a>
+            <a href="/global" class="nav-link">Markets</a>
+            <a href="/portfolio" class="nav-link">Portfolio</a>
+            <span class="nav-pricing">$18/mo</span>
+        </div>
+    </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-        <div class="container">
-            <!-- Trust Badges -->
-            <div class="trust-badges">
-                <div class="trust-badge">
-                    <span class="trust-badge-icon">🔒</span>
-                    <span>Bank-level Security</span>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-badge-icon">📊</span>
-                    <span>Real-time Data</span>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-badge-icon">✅</span>
-                    <span>SEF Registered</span>
-                </div>
-                <div class="trust-badge">
-                    <span class="trust-badge-icon">🛡️</span>
-                    <span>GDPR Compliant</span>
-                </div>
-            </div>
-            
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>AI-Powered Stock Analysis for Smarter Investing</h1>
-                    <p>Get instant buy/sell recommendations powered by advanced AI. Analyze stocks from 6 global markets with professional-grade insights.</p>
-                    <div class="hero-buttons">
-                        <a href="/onboarding" class="btn btn-primary">Start Free Trial →</a>
-                        <a href="#features" class="btn btn-secondary">Learn More</a>
-                    </div>
-                    <div class="hero-stats">
-                        <div class="stat">
-                            <div class="stat-number">6</div>
-                            <div class="stat-label">Global Markets</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">20+</div>
-                            <div class="stat-label">Payment Methods</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-number">98%</div>
-                            <div class="stat-label">User Satisfaction</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <div class="dashboard-preview">
-                        <div class="preview-header">
-                            <span>📊 Your Dashboard</span>
-                        </div>
-                        <div class="preview-grid">
-                            <div class="preview-card">
-                                <span class="preview-label">AAPL</span>
-                                <span class="preview-value positive">+2.4%</span>
-                            </div>
-                            <div class="preview-card">
-                                <span class="preview-label">BTC</span>
-                                <span class="preview-value positive">+$1,240</span>
-                            </div>
-                            <div class="preview-card">
-                                <span class="preview-label">DBS</span>
-                                <span class="preview-value positive">BUY</span>
-                            </div>
-                            <div class="preview-card">
-                                <span class="preview-label">Portfolio</span>
-                                <span class="preview-value">$124,500</span>
-                            </div>
-                        </div>
-                        <div class="preview-footer">
-                            <span>🔔 3 Price Alerts Active</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <span class="hero-tag">Only for $18/month</span>
+        <h1 class="hero-title">Get the edge on the market with precision.</h1>
+        <p class="hero-subtitle">We have worked for Wall Street Banks and know banks have an information edge over you. It's time to level the playing field.</p>
+        
+        <!-- Search -->
+        <div class="search-container">
+            <i class="ph ph-magnifying-glass search-icon"></i>
+            <input type="text" class="search-box" placeholder="Symbol or company" id="stock-search">
+            <span class="search-shortcut">⌘K</span>
+            <div class="search-results" id="search-results"></div>
         </div>
     </section>
 
-    <!-- Features Section -->
-    <section id="features" class="features">
-        <div class="container">
-            <div class="section-header">
-                <h2>Everything You Need for Smarter Investing</h2>
-                <p>Professional-grade tools powered by AI</p>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🤖</div>
-                    <h3>AI Analysis</h3>
-                    <p>Get instant buy/sell/hold recommendations powered by Gemini AI with exact price targets.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
-                    <h3>6 Global Markets</h3>
-                    <p>Analyze stocks from US, China, Hong Kong, Singapore, Japan, and Cryptocurrency markets.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📰</div>
-                    <h3>Real-Time News</h3>
-                    <p>Stay updated with latest news and sentiment analysis for informed decisions.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">💼</div>
-                    <h3>Portfolio Tracking</h3>
-                    <p>Track your investments with performance metrics, risk analysis, and P&L tracking.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🧪</div>
-                    <h3>Backtesting</h3>
-                    <p>Test your strategies on historical data before risking real money.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Enterprise Security</h3>
-                    <p>Bank-level encryption, MAS-compliant, PDPA-protected data security.</p>
-                </div>
+    <!-- Stock Cards -->
+    <section class="stocks-section">
+        <div class="section-header">
+            <span class="section-title">Trending Stocks</span>
+            <div>
+                <button class="scroll-btn" onclick="scrollStocks(-1)"><i class="ph ph-caret-left"></i></button>
+                <button class="scroll-btn" onclick="scrollStocks(1)"><i class="ph ph-caret-right"></i></button>
             </div>
         </div>
-    </section>
-
-    <!-- Markets Section -->
-    <section id="markets" class="markets">
-        <div class="container">
-            <div class="section-header">
-                <h2>Access Global Markets</h2>
-                <p>One platform, six major markets</p>
-            </div>
-            <div class="markets-grid">
-                <div class="market-card">
-                    <div class="market-flag">🇺🇸</div>
-                    <h3>US Stocks</h3>
-                    <p>NYSE, NASDAQ</p>
-                </div>
-                <div class="market-card">
-                    <div class="market-flag">🇨🇳</div>
-                    <h3>China A-Shares</h3>
-                    <p>Shanghai, Shenzhen</p>
-                </div>
-                <div class="market-card">
-                    <div class="market-flag">🇭🇰</div>
-                    <h3>Hong Kong</h3>
-                    <p>HKEX</p>
-                </div>
-                <div class="market-card">
-                    <div class="market-flag">🇸🇬</div>
-                    <h3>Singapore</h3>
-                    <p>SGX</p>
-                </div>
-                <div class="market-card">
-                    <div class="market-flag">🇯🇵</div>
-                    <h3>Japan</h3>
-                    <p>TSE</p>
-                </div>
-                <div class="market-card">
-                    <div class="market-flag">₿</div>
-                    <h3>Crypto</h3>
-                    <p>BTC, ETH, 1000+</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing">
-        <div class="container">
-            <div class="section-header">
-                <h2>Simple, Transparent Pricing</h2>
-                <p>Start free, upgrade when ready</p>
-            </div>
-            <div class="pricing-grid">
-                <div class="pricing-card">
-                    <h3>Free</h3>
-                    <div class="price">$0<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li>1 Market</li>
-                        <li>10 Analyses/Day</li>
-                        <li>Basic AI Analysis</li>
-                        <li>5 Portfolio Positions</li>
-                        <li>Email Support</li>
-                    </ul>
-                    <a href="/onboarding" class="btn btn-secondary" style="width:100%">Get Started</a>
-                </div>
-                <div class="pricing-card popular">
-                    <h3>Basic</h3>
-                    <div class="price">$29<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li>2 Markets</li>
-                        <li>1,000 Analyses/Day</li>
-                        <li>Unlimited AI Analysis</li>
-                        <li>50 Portfolio Positions</li>
-                        <li>News & Sentiment</li>
-                        <li>Priority Support</li>
-                    </ul>
-                    <a href="/onboarding?plan=basic" class="btn btn-primary" style="width:100%">Start Free Trial</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Pro</h3>
-                    <div class="price">$99<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li>All 6 Markets</li>
-                        <li>10,000 Analyses/Day</li>
-                        <li>Everything in Basic</li>
-                        <li>Backtesting</li>
-                        <li>Risk Analysis</li>
-                        <li>Priority Support</li>
-                    </ul>
-                    <a href="/onboarding?plan=pro" class="btn btn-secondary" style="width:100%">Start Free Trial</a>
-                </div>
-                <div class="pricing-card">
-                    <h3>Enterprise</h3>
-                    <div class="price">$499<span>/month</span></div>
-                    <ul class="pricing-features">
-                        <li>Everything in Pro</li>
-                        <li>100 User Accounts</li>
-                        <li>100,000 Analyses/Day</li>
-                        <li>Dedicated Support</li>
-                        <li>Custom Features</li>
-                        <li>SLA Guarantee</li>
-                    </ul>
-                    <a href="mailto:sales@dailystockanalysis.com" class="btn btn-secondary" style="width:100%">Contact Sales</a>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials -->
-    <section id="testimonials" class="testimonials">
-        <div class="container">
-            <div class="section-header">
-                <h2>Trusted by Investors Worldwide</h2>
-                <p>See what our users say</p>
-            </div>
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"This platform has transformed my investment strategy. The AI analysis is incredibly accurate and saves me hours of research every day."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar"></div>
-                        <div>
-                            <strong>John T.</strong><br>
-                            <small>Individual Investor</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"As a portfolio manager, I need reliable analysis. Daily Stock Analysis delivers professional-grade insights at a fraction of the cost."</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar"></div>
-                        <div>
-                            <strong>Sarah L.</strong><br>
-                            <small>Portfolio Manager</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"The multi-market support is game-changing. I can analyze US, Asian, and crypto markets all in one place. Highly recommended!"</p>
-                    <div class="testimonial-author">
-                        <div class="author-avatar"></div>
-                        <div>
-                            <strong>Michael C.</strong><br>
-                            <small>Crypto Trader</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="cta">
-        <div class="container">
-            <h2>Ready to Start Making Smarter Investment Decisions?</h2>
-            <p>Join thousands of investors using AI-powered analysis</p>
-            <a href="/onboarding" class="btn btn-secondary" style="background:white;color:var(--primary)">Start Your Free Trial →</a>
-            <p style="margin-top:20px;font-size:0.875rem;opacity:0.8">No credit card required • 7-day money-back guarantee</p>
+        
+        <div class="stocks-scroll" id="stocks-scroll">
+            <!-- Stock cards rendered by JS -->
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-col">
-                    <h4>Product</h4>
-                    <ul>
-                        <li><a href="#features">Features</a></li>
-                        <li><a href="#pricing">Pricing</a></li>
-                        <li><a href="#markets">Markets</a></li>
-                        <li><a href="/docs">Documentation</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Company</h4>
-                    <ul>
-                        <li><a href="#">About Us</a></li>
-                        <li><a href="#">Careers</a></li>
-                        <li><a href="#">Blog</a></li>
-                        <li><a href="#">Press</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="/web/HELP_CENTER.md">Help Center</a></li>
-                        <li><a href="mailto:support@dailystockanalysis.com">Contact</a></li>
-                        <li><a href="/web/CLIENT_GUIDE.md">Client Guide</a></li>
-                        <li><a href="#">Status</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Legal</h4>
-                    <ul>
-                        <li><a href="/modules/legal/terms.md">Terms of Service</a></li>
-                        <li><a href="/modules/legal/privacy.md">Privacy Policy</a></li>
-                        <li><a href="/modules/legal/disclaimer.md">Disclaimer</a></li>
-                        <li><a href="#">Cookie Policy</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>© 2026 Daily Stock Analysis. All rights reserved.</p>
-                <p style="margin-top:10px;font-size:0.75rem">Investing involves risk. Past performance does not guarantee future results. Not financial advice.</p>
-            </div>
-        </div>
+    <footer class="footer">
+        <p>© 2026 TradeVision. All rights reserved.</p>
     </footer>
 
     <script>
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-        const mobileMenuOverlay = document.querySelector('.mobile-menu-overlay');
+        // Stock Data
+        const stocks = [
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 192.01, change: 2.34, positive: true },
+            { symbol: 'TSLA', name: 'Tesla Inc.', price: 443.01, change: 5.67, positive: true },
+            { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 1082.01, change: 1.23, positive: true },
+            { symbol: 'NKE', name: 'Nike Inc.', price: 122.34, change: 0.89, positive: true },
+            { symbol: 'META', name: 'Meta Platforms', price: 485.32, change: -1.45, positive: false },
+            { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.28, change: 3.12, positive: true },
+            { symbol: 'MSFT', name: 'Microsoft Corp.', price: 415.28, change: 0.95, positive: true },
+            { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.92, change: 1.87, positive: true },
+            { symbol: 'JPM', name: 'JPMorgan Chase', price: 198.45, change: -0.32, positive: false },
+            { symbol: 'V', name: 'Visa Inc.', price: 278.91, change: 0.56, positive: true },
+            { symbol: 'WMT', name: 'Walmart Inc.', price: 165.32, change: 0.78, positive: true },
+            { symbol: 'DIS', name: 'Walt Disney Co.', price: 112.45, change: -2.10, positive: false },
+        ];
 
-        mobileMenuBtn.addEventListener('click', function() {
-            const isActive = navLinks.classList.contains('active');
-            navLinks.classList.toggle('active');
-            mobileMenuOverlay.classList.toggle('active');
-            mobileMenuBtn.setAttribute('aria-expanded', !isActive);
-            mobileMenuBtn.innerHTML = isActive ? '☰' : '✕';
-            document.body.style.overflow = isActive ? '' : 'hidden';
+        // Render Stock Cards
+        function renderStocks() {
+            const container = document.getElementById('stocks-scroll');
+            container.innerHTML = stocks.map((stock, i) => `
+                <div class="stock-card ${i === 2 ? 'active' : ''}" onclick="selectStock('${stock.symbol}')">
+                    <div class="stock-header">
+                        <div class="stock-logo">${stock.symbol.slice(0, 2)}</div>
+                        <div class="stock-info">
+                            <h4>${stock.symbol}</h4>
+                            <p>${stock.name}</p>
+                        </div>
+                        <i class="ph ph-chart-line-up stock-chart-icon"></i>
+                    </div>
+                    <div class="stock-price">$${stock.price.toLocaleString()}</div>
+                    <div class="stock-change ${stock.positive ? 'positive' : 'negative'}">
+                        <i class="ph ph-caret-${stock.positive ? 'up' : 'down'}"></i>
+                        ${stock.positive ? '+' : ''}${stock.change}%
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Scroll Stocks
+        function scrollStocks(dir) {
+            const container = document.getElementById('stocks-scroll');
+            container.scrollBy({ left: dir * 240, behavior: 'smooth' });
+        }
+
+        // Select Stock
+        function selectStock(symbol) {
+            window.location.href = '/analyze?symbol=' + symbol;
+        }
+
+        // Search Functionality
+        const searchInput = document.getElementById('stock-search');
+        const searchResults = document.getElementById('search-results');
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length < 1) {
+                searchResults.classList.remove('active');
+                return;
+            }
+            
+            const matches = stocks.filter(s => 
+                s.symbol.toLowerCase().includes(query) || 
+                s.name.toLowerCase().includes(query)
+            );
+            
+            if (matches.length > 0) {
+                searchResults.innerHTML = matches.map(s => `
+                    <div class="search-result-item" onclick="selectStock('${s.symbol}')">
+                        <span class="symbol">${s.symbol}</span>
+                        <span class="name">${s.name}</span>
+                        <span class="price">$${s.price}</span>
+                    </div>
+                `).join('');
+                searchResults.classList.add('active');
+            } else {
+                searchResults.classList.remove('active');
+            }
         });
 
-        // Close menu when clicking overlay
-        mobileMenuOverlay.addEventListener('click', function() {
-            navLinks.classList.remove('active');
-            mobileMenuOverlay.classList.remove('active');
-            mobileMenuBtn.setAttribute('aria-expanded', 'false');
-            mobileMenuBtn.innerHTML = '☰';
-            document.body.style.overflow = '';
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && searchInput.value) {
+                selectStock(searchInput.value.toUpperCase());
+            }
         });
 
-        // Close menu when clicking a link
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', function() {
-                navLinks.classList.remove('active');
-                mobileMenuOverlay.classList.remove('active');
-                mobileMenuBtn.setAttribute('aria-expanded', 'false');
-                mobileMenuBtn.innerHTML = '☰';
-                document.body.style.overflow = '';
-            });
+        // Close search on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
+                searchResults.classList.remove('active');
+            }
         });
 
-        // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            });
-        });
-
-        // Animate elements on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.feature-card, .pricing-card, .testimonial-card, .market-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(30px)';
-            el.style.transition = 'opacity 0.6s, transform 0.6s';
-            observer.observe(el);
-        });
-
-        // Prevent zoom on double tap (iOS)
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
-        }, { passive: false });
+        // Initialize
+        renderStocks();
     </script>
 </body>
 </html>
