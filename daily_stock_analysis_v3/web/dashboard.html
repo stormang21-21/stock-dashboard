@@ -103,13 +103,50 @@
         .logo-icon {
             width: 42px;
             height: 42px;
-            background: linear-gradient(135deg, #00AAFF 0%, #0055FF 100%);
-            border-radius: var(--radius-md);
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            border-radius: var(--radius-md);
             box-shadow: var(--shadow-glow-cyan);
+        }
+        
+        .logo-icon .w-geometric {
+            position: relative;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .logo-icon .w-geometric span {
+            position: absolute;
+            width: 8px;
+            height: 100%;
+            transform: skewX(-15deg);
+        }
+        
+        .logo-icon .w-geometric .leg1 {
+            left: 0;
+            background: linear-gradient(180deg, #00D4FF 0%, #0088CC 100%);
+            clip-path: polygon(0 20%, 100% 0, 100% 80%, 0 100%);
+        }
+        
+        .logo-icon .w-geometric .leg2 {
+            left: 7px;
+            background: linear-gradient(180deg, #0055FF 0%, #0033AA 100%);
+            clip-path: polygon(0 0, 100% 25%, 100% 100%, 0 75%);
+        }
+        
+        .logo-icon .w-geometric .leg3 {
+            left: 14px;
+            background: linear-gradient(180deg, #00AAFF 0%, #0066CC 100%);
+            clip-path: polygon(0 20%, 100% 0, 100% 80%, 0 100%);
+        }
+        
+        .logo-icon .w-geometric .leg4 {
+            left: 21px;
+            background: linear-gradient(180deg, #0033AA 0%, #001155 100%);
+            clip-path: polygon(0 0, 100% 25%, 100% 100%, 0 75%);
+        }
         }
 
         .logo-text {
@@ -843,7 +880,7 @@
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <div class="logo-icon">W</div>
+                <div class="logo-icon"><div class="w-geometric"><span class="leg1"></span><span class="leg2"></span><span class="leg3"></span><span class="leg4"></span></div></div>
                 <span class="logo-text">TradeVision</span>
             </div>
             
