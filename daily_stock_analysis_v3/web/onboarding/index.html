@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Get Started - Daily Stock Analysis</title>
+    <style>
+        :root {
+            --primary: #00d4aa;
+            --primary-dark: #00b894;
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #21262d;
+            --text: #f0f6fc;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+            min-height: 100vh;
+            color: var(--text);
+        }
+        
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .header p {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+        }
+        
+        /* Progress Stepper */
+        .stepper {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .step {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            background: var(--bg-input);
+            color: var(--text-dim);
+            border: 2px solid var(--border);
+        }
+        
+        .step.active {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border-color: var(--primary);
+        }
+        
+        .step.completed {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        /* Card */
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            border: 1px solid var(--border);
+        }
+        
+        .card h2 {
+            color: var(--text);
+            margin-bottom: 8px;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-header span {
+            font-size: 1.25rem;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--bg-input);
+            color: var(--text);
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .form-group input::placeholder {
+            color: var(--text-dim);
+        }
+        
+        .required {
+            color: var(--danger);
+        }
+        
+        /* Button */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--bg-dark);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 212, 170, 0.3);
+        }
+        
+        /* Links */
+        .links {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.875rem;
+            color: var(--text-dim);
+        }
+        
+        .links a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        /* Error message */
+        .error {
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        
+        /* Mobile adjustments */
+        @media (max-width: 430px) {
+            .container {
+                padding: 16px;
+            }
+            
+            .card {
+                padding: 20px;
+                border-radius: 16px;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Welcome to Daily Stock Analysis</h1>
+            <p>Set up your personalized trading platform</p>
+        </div>
+        
+        <div class="stepper">
+            <div class="step active">1</div>
+            <div class="step">2</div>
+            <div class="step">3</div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <span>📝</span>
+                <h2>Account Information</h2>
+            </div>
+            
+            <form id="onboardingForm">
+                <div class="form-group">
+                    <label>Full Name <span class="required">*</span></label>
+                    <input type="text" id="fullName" placeholder="John Doe" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" placeholder="john@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password <span class="required">*</span></label>
+                    <input type="password" id="password" placeholder="••••••••" required minlength="8">
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Continue →</button>
+            </form>
+            
+            <div class="links">
+                Already have an account? <a href="/login">Sign in</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('onboardingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            
+            if(name && email) {
+                // Store and redirect
+                window.location.href = '/dashboard';
+            }
+        });
+    </script>
+</body>
+</html>

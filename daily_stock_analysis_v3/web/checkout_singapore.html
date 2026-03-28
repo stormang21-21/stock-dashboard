@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout Singapore - DSA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .badge-sg {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        .compliance-notice {
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        .compliance-notice h3 {
+            color: #1976d2;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .compliance-notice ul {
+            margin-left: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .compliance-notice li {
+            margin: 5px 0;
+        }
+        .payment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .payment-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .payment-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .payment-option .icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .payment-option .name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .payment-option .type {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        .kyc-form {
+            display: none;
+            margin-top: 20px;
+        }
+        .kyc-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .btn-pay:hover {
+            transform: translateY(-2px);
+        }
+        .btn-pay:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .limit-info {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .limit-info h4 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        .limit-bar {
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .limit-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ade80, #22c55e);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        .limit-fill.warning {
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        }
+        .limit-fill.danger {
+            background: linear-gradient(90deg, #ef4444, #dc2626);
+        }
+        .secure-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .flag-icon {
+            font-size: 1.5rem;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🇸🇬 Singapore Checkout</h1>
+            <p>MAS-compliant payment processing</p>
+            <div class="badge-sg">
+                <span class="flag-icon">🛡️</span>
+                PDPA Protected • MAS Regulated
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Order Summary</h2>
+            <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:20px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <span>Plan</span>
+                    <span id="plan-name" style="font-weight:600;">Basic Plan</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
+                    <span>Amount (USD)</span>
+                    <span id="amount-usd">$29.00</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:0.9rem;color:#666;">
+                    <span>Amount (SGD)</span>
+                    <span id="amount-sgd">S$39.00</span>
+                </div>
+            </div>
+
+            <div class="compliance-notice">
+                <h3>🛡️ MAS Payment Services Act Compliance</h3>
+                <ul>
+                    <li>Daily limit: S$5,000 (Individual) / S$50,000 (Corporate)</li>
+                    <li>Crypto payments require KYC verification above S$5,000</li>
+                    <li>All transactions protected under PDPA</li>
+                    <li>AML/CFT monitoring enabled</li>
+                </ul>
+            </div>
+
+            <h3 style="margin-bottom:15px;">Select Payment Method</h3>
+            <div class="payment-grid">
+                <!-- Cards -->
+                <div class="payment-option selected" onclick="selectPayment('card')">
+                    <div class="icon">💳</div>
+                    <div class="name">Credit/Debit Card</div>
+                    <div class="type">Visa, Mastercard, Amex</div>
+                </div>
+                
+                <!-- PayNow -->
+                <div class="payment-option" onclick="selectPayment('paynow')">
+                    <div class="icon">🏦</div>
+                    <div class="name">PayNow</div>
+                    <div class="type">Instant Bank Transfer</div>
+                </div>
+                
+                <!-- GrabPay -->
+                <div class="payment-option" onclick="selectPayment('grabpay')">
+                    <div class="icon">📱</div>
+                    <div class="name">GrabPay</div>
+                    <div class="type">E-Wallet</div>
+                </div>
+                
+                <!-- Crypto -->
+                <div class="payment-option" onclick="selectPayment('crypto')">
+                    <div class="icon">₿</div>
+                    <div class="name">Cryptocurrency</div>
+                    <div class="type">BTC, ETH, USDT</div>
+                </div>
+            </div>
+
+            <!-- KYC Form (for crypto) -->
+            <div id="kyc-form" class="kyc-form">
+                <h3 style="margin-bottom:15px;">KYC Verification (MAS Required)</h3>
+                <div class="form-group">
+                    <label for="full-name">Full Name (as per NRIC)</label>
+                    <input type="text" id="full-name" required placeholder="TAN AH KOW">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nric">NRIC/FIN</label>
+                        <input type="text" id="nric" required placeholder="S1234567A" maxlength="9">
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">Date of Birth</label>
+                        <input type="date" id="dob" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="address">Residential Address</label>
+                    <input type="text" id="address" required placeholder="Blk 123, Orchard Road, #01-23, Singapore 238123">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Mobile Number</label>
+                        <input type="tel" id="phone" required placeholder="+65 9123 4567">
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" required>
+                            <option value="SG" selected>🇸🇬 Singapore</option>
+                            <option value="MY">🇲🇾 Malaysia</option>
+                            <option value="TH">🇹🇭 Thailand</option>
+                            <option value="ID">🇮🇩 Indonesia</option>
+                            <option value="PH">🇵🇭 Philippines</option>
+                            <option value="VN">🇻🇳 Vietnam</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="background:#fff3cd;padding:15px;border-radius:8px;margin:15px 0;">
+                    <div style="display:flex;align-items:start;gap:10px;">
+                        <span style="font-size:1.2rem;">📋</span>
+                        <div style="font-size:0.9rem;color:#856404;">
+                            <strong>PDPA Notice:</strong> Your personal data is protected under Singapore's Personal Data Protection Act. 
+                            We collect this information for KYC/AML compliance as required by MAS.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Limits -->
+            <div class="limit-info">
+                <h4>📊 Your Transaction Limits</h4>
+                <div style="margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;">
+                        <span>Daily Limit</span>
+                        <span>S$4,971 / S$5,000</span>
+                    </div>
+                    <div class="limit-bar">
+                        <div class="limit-fill" style="width:99%;"></div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex;justify-content:space-between;font-size:0.9rem;">
+                        <span>Monthly Limit</span>
+                        <span>S$12,450 / S$50,000</span>
+                    </div>
+                    <div class="limit-bar">
+                        <div class="limit-fill" style="width:25%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-pay" id="pay-button" onclick="processPayment()">
+                Pay S$39.00
+            </button>
+
+            <div class="secure-badge">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                <span>MAS-regulated • PDPA-compliant • 256-bit SSL encrypted</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const plan = urlParams.get('plan') || 'basic';
+        const planPrices = { 'basic': 29, 'pro': 99, 'enterprise': 499 };
+        const usdAmount = planPrices[plan] || 29;
+        const sgdAmount = usdAmount * 1.35; // Approximate SGD conversion
+        
+        document.getElementById('plan-name').textContent = plan.charAt(0).toUpperCase() + plan.slice(1) + ' Plan';
+        document.getElementById('amount-usd').textContent = `$${usdAmount}.00`;
+        document.getElementById('amount-sgd').textContent = `S$${sgdAmount.toFixed(2)}`;
+        
+        let selectedPayment = 'card';
+        
+        function selectPayment(method) {
+            selectedPayment = method;
+            
+            document.querySelectorAll('.payment-option').forEach(p => p.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            // Show KYC form for crypto
+            const kycForm = document.getElementById('kyc-form');
+            if (method === 'crypto') {
+                kycForm.classList.add('active');
+                document.getElementById('pay-button').textContent = 'Complete KYC & Pay';
+            } else {
+                kycForm.classList.remove('active');
+                document.getElementById('pay-button').textContent = `Pay S$${sgdAmount.toFixed(2)}`;
+            }
+        }
+        
+        function processPayment() {
+            // Validate KYC for crypto
+            if (selectedPayment === 'crypto') {
+                const nric = document.getElementById('nric').value;
+                if (!validateNRIC(nric)) {
+                    alert('Please enter a valid NRIC/FIN number');
+                    return;
+                }
+                
+                // Collect KYC data
+                const kycData = {
+                    full_name: document.getElementById('full-name').value,
+                    nric_fin: nric,
+                    date_of_birth: document.getElementById('dob').value,
+                    address: document.getElementById('address').value,
+                    phone: document.getElementById('phone').value,
+                    country: document.getElementById('country').value,
+                };
+                
+                // Submit KYC + Payment
+                submitPayment(kycData);
+            } else {
+                submitPayment(null);
+            }
+        }
+        
+        function validateNRIC(nric) {
+            // Basic NRIC validation
+            if (!nric) return false;
+            nric = nric.trim().toUpperCase();
+            if (nric.length !== 9) return false;
+            if (!['S', 'T', 'F', 'G'].includes(nric[0])) return false;
+            if (!/^\d{7}$/.test(nric.substring(1, 8))) return false;
+            return true;
+        }
+        
+        function submitPayment(kycData) {
+            const button = document.getElementById('pay-button');
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            
+            // In production, this would call the API
+            fetch('/api/saas/process-payment-sg', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    plan: plan,
+                    payment_method: selectedPayment,
+                    amount_sgd: sgdAmount,
+                    kyc_data: kycData,
+                }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('🎉 Payment successful! Subscription activated.');
+                    window.location.href = '/admin?subscription=active';
+                } else {
+                    alert('Error: ' + (data.error || 'Payment failed'));
+                    button.disabled = false;
+                    button.textContent = `Pay S$${sgdAmount.toFixed(2)}`;
+                }
+            })
+            .catch(error => {
+                console.error('Payment error:', error);
+                alert('Payment failed. Please try again.');
+                button.disabled = false;
+                button.textContent = `Pay S$${sgdAmount.toFixed(2)}`;
+            });
+        }
+    </script>
+</body>
+</html>

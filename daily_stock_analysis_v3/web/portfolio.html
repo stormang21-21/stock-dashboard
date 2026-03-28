@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Portfolio - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0d1117; padding: 20px; margin: 0; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: #161b22; padding: 30px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { color: #c9d1d9; margin-bottom: 10px; }
+        .subtitle { color: #8b949e; margin-bottom: 25px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .summary-card { background: #161b22; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .summary-label { font-size: 0.875rem; color: #8b949e; margin-bottom: 5px; }
+        .summary-value { font-size: 1.5rem; font-weight: 800; color: #c9d1d9; }
+        .summary-value.positive { color: #48bb78; }
+        .summary-value.negative { color: #f56565; }
+        .positions-table { background: #161b22; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #0d1117; padding: 15px; text-align: left; font-weight: 600; color: #8b949e; font-size: 0.875rem; }
+        td { padding: 15px; border-top: 1px solid #e2e8f0; }
+        .symbol { font-weight: 700; color: #c9d1d9; }
+        .company { font-size: 0.875rem; color: #8b949e; }
+        .positive { color: #48bb78; font-weight: 600; }
+        .negative { color: #f56565; font-weight: 600; }
+        .btn { padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .btn-sell { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); }
+        .actions { display: flex; gap: 10px; }
+        .loading { text-align: center; padding: 60px; color: #8b949e; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #667eea; text-decoration: none; }
+        .empty-state { text-align: center; padding: 60px; color: #8b949e; }
+        @media (max-width: 768px) { table { font-size: 0.875rem; } th, td { padding: 10px; } .actions { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: #161b22; padding: 12px 24px; display: flex; gap: 20px; border-bottom: 1px solid #30363d;">
+        <a href="/" style="color: #8b949e; text-decoration: none; font-size: 14px;">🏠 Home</a>
+        <a href="/analyze" style="color: #8b949e; text-decoration: none; font-size: 14px;">📊 Analyze</a>
+        <a href="/charts" style="color: #8b949e; text-decoration: none; font-size: 14px;">📈 Charts</a>
+        <a href="/global" style="color: #8b949e; text-decoration: none; font-size: 14px;">🌍 Global</a>
+        <a href="/portfolio" style="color: #8b949e; text-decoration: none; font-size: 14px;">💼 Portfolio</a>
+        <a href="/watchlist" style="color: #8b949e; text-decoration: none; font-size: 14px;">⭐ Watchlist</a>
+        <a href="/crypto" style="color: #8b949e; text-decoration: none; font-size: 14px;">₿ Crypto</a>
+        <a href="/agent" style="color: #8b949e; text-decoration: none; font-size: 14px;">🤖 Agent</a>
+    </nav>
+    <div class="container">
+        <a href="/analyze" class="back-link">← Back to Analysis</a>
+        
+        <div class="header">
+            <h1>💼 My Portfolio</h1>
+            <p class="subtitle">Track your investments and performance</p>
+            
+            <div style="margin-bottom: 20px;">
+                <button class="btn" onclick="refreshPortfolio()">🔄 Refresh</button>
+                <button class="btn" onclick="showBuyModal()">➕ Add Stock</button>
+            </div>
+        </div>
+        
+        <div id="summary-grid" class="summary-grid"></div>
+        
+        <div id="loading" class="loading">
+            <div style="font-size: 3rem; margin-bottom: 20px;">💼</div>
+            <p>Loading portfolio...</p>
+        </div>
+        
+        <div id="empty-state" class="empty-state" style="display:none;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">📊</div>
+            <h3>No positions yet</h3>
+            <p>Start building your portfolio by adding stocks!</p>
+            <button class="btn" onclick="showBuyModal()" style="margin-top: 20px;">Add Your First Stock</button>
+        </div>
+        
+        <div id="positions-container" class="positions-table" style="display:none;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Symbol</th>
+                        <th>Shares</th>
+                        <th>Avg Cost</th>
+                        <th>Current</th>
+                        <th>Market Value</th>
+                        <th>Gain/Loss</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="positions-body"></tbody>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        async function loadPortfolio() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('positions-container').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/portfolio?user_id=demo');
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (!data.positions || data.positions.length === 0) {
+                    document.getElementById('empty-state').style.display = 'block';
+                    return;
+                }
+                
+                // Show summary
+                const summaryHtml = `
+                    <div class="summary-card">
+                        <div class="summary-label">Total Value</div>
+                        <div class="summary-value">$${data.total_portfolio_value.toLocaleString()}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Cash</div>
+                        <div class="summary-value">$${data.cash.toLocaleString()}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Invested</div>
+                        <div class="summary-value">$${data.total_market_value.toLocaleString()}</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-label">Total Gain/Loss</div>
+                        <div class="summary-value ${data.total_unrealized_pnl >= 0 ? 'positive' : 'negative'}">
+                            ${data.total_unrealized_pnl >= 0 ? '+' : ''}$${data.total_unrealized_pnl.toLocaleString()} (${data.total_unrealized_pnl_percent >= 0 ? '+' : ''}${data.total_unrealized_pnl_percent}%)
+                        </div>
+                    </div>
+                `;
+                document.getElementById('summary-grid').innerHTML = summaryHtml;
+                
+                // Show positions
+                const tbody = document.getElementById('positions-body');
+                tbody.innerHTML = data.positions.map(pos => `
+                    <tr>
+                        <td>
+                            <div class="symbol">${pos.symbol}</div>
+                            <div class="company">${pos.company_name || ''}</div>
+                        </td>
+                        <td>${pos.quantity}</td>
+                        <td>$${pos.average_cost.toFixed(2)}</td>
+                        <td>$${pos.current_price.toFixed(2)}</td>
+                        <td>$${pos.market_value.toLocaleString()}</td>
+                        <td class="${pos.unrealized_pnl >= 0 ? 'positive' : 'negative'}">
+                            ${pos.unrealized_pnl >= 0 ? '+' : ''}$${pos.unrealized_pnl.toFixed(2)} (${pos.unrealized_pnl_percent >= 0 ? '+' : ''}${pos.unrealized_pnl_percent}%)
+                        </td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-sell" onclick="sellStock('${pos.symbol}')">Sell</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                document.getElementById('positions-container').style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<div style="color: #f56565;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function refreshPortfolio() {
+            loadPortfolio();
+        }
+        
+        function showBuyModal() {
+            const symbol = prompt('Enter stock symbol (e.g., AAPL, TSLA):');
+            if (symbol) {
+                const quantity = prompt('Enter quantity:', '10');
+                if (quantity) {
+                    buyStock(symbol.toUpperCase(), parseFloat(quantity));
+                }
+            }
+        }
+        
+        async function buyStock(symbol, quantity) {
+            try {
+                const response = await fetch(`/api/portfolio/buy?symbol=${symbol}&quantity=${quantity}&user_id=demo`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    loadPortfolio();
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+        
+        async function sellStock(symbol) {
+            const quantity = prompt(`Enter quantity to sell for ${symbol}:`, '1');
+            if (quantity) {
+                try {
+                    const response = await fetch(`/api/portfolio/sell?symbol=${symbol}&quantity=${parseFloat(quantity)}&user_id=demo`, {
+                        method: 'POST'
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alert(result.message);
+                        loadPortfolio();
+                    } else {
+                        alert('Error: ' + result.error);
+                    }
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+        
+        // Load on page load
+        loadPortfolio();
+    </script>
+</body>
+</html>

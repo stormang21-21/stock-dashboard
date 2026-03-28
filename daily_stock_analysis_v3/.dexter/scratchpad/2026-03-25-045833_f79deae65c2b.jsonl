@@ -1,0 +1,5 @@
+{"type": "init", "timestamp": "2026-03-25T04:58:33.123491", "query": "tsla"}
+{"type": "thinking", "timestamp": "2026-03-25T04:58:33.123605", "thought": "Starting research: tsla"}
+{"type": "thinking", "timestamp": "2026-03-25T04:58:33.123626", "thought": "Planning research steps..."}
+{"type": "thinking", "timestamp": "2026-03-25T04:58:33.123674", "thought": "Validating results..."}
+{"type": "result", "timestamp": "2026-03-25T04:58:33.123707", "query": "tsla", "results": {}, "validation": {"valid": false, "confidence": 0.4, "issues": ["Empty data returned"], "suggestions": ["Add summary"]}, "log_file": ".dexter/scratchpad/2026-03-25-045833_f79deae65c2b.jsonl"}

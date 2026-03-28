@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backtest - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #00d4aa;
+            --primary-dark: #00b894;
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #21262d;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --success: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        /* Navigation */
+        nav {
+            background: var(--bg-card);
+            padding: 12px 24px;
+            display: flex;
+            gap: 20px;
+            border-bottom: 1px solid var(--border);
+            margin: -20px -20px 20px -20px;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        nav a:hover { color: var(--text); }
+        
+        h1 { color: var(--text); margin-bottom: 5px; }
+        .subtitle { color: var(--text-dim); margin-bottom: 25px; }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+        }
+        
+        /* Form */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+        
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+        }
+        
+        .form-group select:focus, .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        button {
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Results */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .result-item {
+            background: var(--bg-input);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .result-label {
+            color: var(--text-dim);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .result-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .result-value.positive { color: var(--success); }
+        .result-value.negative { color: var(--danger); }
+        
+        /* Trades Table */
+        .trades-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .trades-table th, .trades-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .trades-table th {
+            color: var(--text-dim);
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        
+        .trades-table td {
+            font-size: 14px;
+        }
+        
+        .trade-buy { color: var(--success); }
+        .trade-sell { color: var(--danger); }
+        
+        /* Chart */
+        .chart-container {
+            height: 400px;
+            margin-top: 20px;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-dim);
+        }
+        
+        .hidden { display: none; }
+        
+        /* Strategy Description */
+        .strategy-info {
+            background: var(--bg-input);
+            padding: 16px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">🏠 Home</a>
+        <a href="/analyze">📊 Analyze</a>
+        <a href="/charts">📈 Charts</a>
+        <a href="/global">🌍 Global</a>
+        <a href="/crypto">₿ Crypto</a>
+        <a href="/backtest">🧪 Backtest</a>
+        <a href="/portfolio">💼 Portfolio</a>
+    </nav>
+    
+    <div class="container">
+        <h1>🧪 Strategy Backtest</h1>
+        <p class="subtitle">Test your trading strategies on historical data</p>
+        
+        <div class="card">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Symbol</label>
+                    <input type="text" id="symbol" placeholder="AAPL, BTC, ETH..." value="AAPL">
+                </div>
+                <div class="form-group">
+                    <label>Strategy</label>
+                    <select id="strategy">
+                        <option value="sma_crossover">SMA Crossover (20/50)</option>
+                        <option value="rsi">RSI (Overbought/Oversold)</option>
+                        <option value="dual_indicator">SMA + RSI Combined</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="startDate" value="2025-01-01">
+                </div>
+                <div class="form-group">
+                    <label>Initial Capital</label>
+                    <input type="number" id="capital" value="10000">
+                </div>
+            </div>
+            
+            <div class="strategy-info" id="strategyInfo">
+                <strong>SMA Crossover:</strong> Buy when 20-day SMA crosses above 50-day SMA, sell when it crosses below.
+            </div>
+            
+            <button onclick="runBacktest()" id="runBtn">Run Backtest</button>
+        </div>
+        
+        <div id="loading" class="loading hidden">
+            Running backtest...
+        </div>
+        
+        <div id="results" class="hidden">
+            <div class="card">
+                <h2>📊 Results</h2>
+                <div class="results-grid" id="resultsGrid"></div>
+                <div class="chart-container">
+                    <canvas id="backtestChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>📋 Trade History</h2>
+                <table class="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Action</th>
+                            <th>Price</th>
+                            <th>Shares</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let chart = null;
+        
+        document.getElementById('strategy').addEventListener('change', function() {
+            const info = document.getElementById('strategyInfo');
+            const strategies = {
+                'sma_crossover': '<strong>SMA Crossover:</strong> Buy when 20-day SMA crosses above 50-day SMA, sell when it crosses below.',
+                'rsi': '<strong>RSI Strategy:</strong> Buy when RSI < 30 (oversold), sell when RSI > 70 (overbought).',
+                'dual_indicator': '<strong>Dual Indicator:</strong> Buy when both SMA is bullish AND RSI < 40. Sell when SMA bearish OR RSI > 60.'
+            };
+            info.innerHTML = strategies[this.value] || '';
+        });
+        
+        async function runBacktest() {
+            const symbol = document.getElementById('symbol').value.trim().toUpperCase();
+            const strategy = document.getElementById('strategy').value;
+            const startDate = document.getElementById('startDate').value;
+            const capital = parseFloat(document.getElementById('capital').value);
+            
+            if (!symbol) {
+                alert('Please enter a symbol');
+                return;
+            }
+            
+            document.getElementById('loading').classList.remove('hidden');
+            document.getElementById('results').classList.add('hidden');
+            document.getElementById('runBtn').disabled = true;
+            
+            try {
+                const response = await fetch(`/api/backtest?symbol=${symbol}&strategy=${strategy}&start_date=${startDate}&capital=${capital}`);
+                const data = await response.json();
+                
+                if (!data.success) {
+                    throw new Error(data.error || 'Backtest failed');
+                }
+                
+                displayResults(data);
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('runBtn').disabled = false;
+            }
+        }
+        
+        function displayResults(data) {
+            // Summary stats
+            const stats = data.stats;
+            const resultsGrid = document.getElementById('resultsGrid');
+            resultsGrid.innerHTML = `
+                <div class="result-item">
+                    <div class="result-label">Total Return</div>
+                    <div class="result-value ${stats.totalReturn >= 0 ? 'positive' : 'negative'}">${stats.totalReturn >= 0 ? '+' : ''}${stats.totalReturn.toFixed(2)}%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Final Value</div>
+                    <div class="result-value">$${stats.finalValue.toLocaleString()}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Total Trades</div>
+                    <div class="result-value">${stats.totalTrades}</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Win Rate</div>
+                    <div class="result-value ${stats.winRate >= 50 ? 'positive' : 'negative'}">${stats.winRate.toFixed(1)}%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Max Drawdown</div>
+                    <div class="result-value negative">-${stats.maxDrawdown.toFixed(2)}%</div>
+                </div>
+                <div class="result-item">
+                    <div class="result-label">Sharpe Ratio</div>
+                    <div class="result-value">${stats.sharpeRatio.toFixed(2)}</div>
+                </div>
+            `;
+            
+            // Trades table
+            const tradesBody = document.getElementById('tradesBody');
+            tradesBody.innerHTML = data.trades.map(trade => `
+                <tr>
+                    <td>${trade.date}</td>
+                    <td class="${trade.action === 'BUY' ? 'trade-buy' : 'trade-sell'}">${trade.action}</td>
+                    <td>$${trade.price.toFixed(2)}</td>
+                    <td>${trade.shares}</td>
+                    <td>$${trade.value.toFixed(2)}</td>
+                </tr>
+            `).join('');
+            
+            // Chart
+            if (chart) chart.destroy();
+            const ctx = document.getElementById('backtestChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.equityCurve.map(p => p.date),
+                    datasets: [{
+                        label: 'Portfolio Value',
+                        data: data.equityCurve.map(p => p.value),
+                        borderColor: '#00d4aa',
+                        backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }, {
+                        label: 'Buy & Hold',
+                        data: data.equityCurve.map(p => p.buyHold),
+                        borderColor: '#58a6ff',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#8b949e' } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } },
+                        y: { grid: { color: '#30363d' }, ticks: { color: '#8b949e' } }
+                    }
+                }
+            });
+            
+            document.getElementById('results').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

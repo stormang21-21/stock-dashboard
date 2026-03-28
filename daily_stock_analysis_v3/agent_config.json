@@ -1,0 +1,31 @@
+{
+  "apis": {
+    "yfinance": {
+      "enabled": true,
+      "api_key": null
+    },
+    "newsapi": {
+      "enabled": false,
+      "api_key": null
+    },
+    "financial_datasets": {
+      "enabled": false,
+      "api_key": null
+    },
+    "alpha_vantage": {
+      "enabled": false,
+      "api_key": null
+    }
+  },
+  "features": {
+    "task_planning": true,
+    "self_validation": true,
+    "scratchpad_logging": true,
+    "llm_enhanced": false
+  },
+  "limits": {
+    "max_steps": 10,
+    "max_retries": 3,
+    "confidence_threshold": 0.8
+  }
+}

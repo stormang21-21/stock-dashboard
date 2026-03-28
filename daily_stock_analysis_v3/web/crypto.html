@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cryptocurrency - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary: #00d4aa;
+            --primary-dark: #00b894;
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #21262d;
+            --text: #c9d1d9;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --accent: #58a6ff;
+            --success: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-dark); 
+            padding: 20px; 
+            margin: 0; 
+            min-height: 100vh; 
+            color: var(--text);
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { 
+            background: var(--bg-card); 
+            padding: 30px; 
+            border-radius: 15px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+        }
+        
+        h1 { color: var(--text); margin-bottom: 10px; }
+        .subtitle { color: var(--text-dim); margin-bottom: 25px; }
+        
+        .crypto-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 30px; 
+        }
+        
+        .crypto-card { 
+            background: var(--bg-card); 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            border: 1px solid var(--border);
+        }
+        
+        .crypto-card:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4); 
+            border-color: var(--primary);
+        }
+        
+        .crypto-symbol { 
+            font-size: 1.5rem; 
+            font-weight: 800; 
+            color: var(--primary); 
+            margin-bottom: 5px; 
+        }
+        
+        .crypto-name { 
+            font-size: 0.875rem; 
+            color: var(--text-dim); 
+            margin-bottom: 15px; 
+        }
+        
+        .crypto-price { 
+            font-size: 1.75rem; 
+            font-weight: 800; 
+            color: var(--text); 
+            margin-bottom: 10px; 
+        }
+        
+        .crypto-change { font-size: 1rem; font-weight: 700; }
+        .positive { color: var(--success); }
+        .negative { color: var(--danger); }
+        
+        .loading { 
+            text-align: center; 
+            padding: 60px; 
+            color: var(--text-dim); 
+            font-size: 1.25rem; 
+        }
+        
+        .back-link { 
+            display: inline-block; 
+            margin-bottom: 20px; 
+            color: var(--primary); 
+            text-decoration: none; 
+            font-weight: 600; 
+        }
+        
+        .back-link:hover { text-decoration: underline; }
+        
+        .refresh-btn { 
+            background: var(--primary); 
+            color: var(--bg-dark); 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            float: right; 
+        }
+        
+        .refresh-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+        }
+        
+        /* Analysis Section */
+        .analysis-section {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            background: var(--bg-input);
+            color: var(--text);
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-box button {
+            padding: 14px 28px;
+            background: var(--primary);
+            color: var(--bg-dark);
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .search-box button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .search-box button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .analysis-result {
+            background: var(--bg-input);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .analysis-result.show {
+            display: block;
+        }
+        
+        .crypto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .crypto-header-info h2 {
+            margin: 0 0 5px 0;
+            color: var(--primary);
+            font-size: 1.75rem;
+        }
+        
+        .crypto-header-info span {
+            color: var(--text-dim);
+        }
+        
+        .recommendation {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        
+        .recommendation.buy { 
+            background: rgba(63, 185, 80, 0.2); 
+            color: var(--success); 
+        }
+        
+        .recommendation.sell { 
+            background: rgba(248, 81, 73, 0.2); 
+            color: var(--danger); 
+        }
+        
+        .recommendation.hold { 
+            background: rgba(210, 153, 34, 0.2); 
+            color: var(--warning); 
+        }
+        
+        .price-display {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 24px;
+        }
+        
+        .price-item {
+            text-align: center;
+        }
+        
+        .price-label {
+            color: var(--text-dim);
+            font-size: 0.875rem;
+            margin-bottom: 5px;
+        }
+        
+        .price-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .price-value.current {
+            color: var(--text);
+            font-size: 2rem;
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .tech-item {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .tech-label {
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        
+        .tech-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .analysis-summary {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--bg-card);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .analysis-summary h4 {
+            margin: 0 0 10px 0;
+            color: var(--primary);
+        }
+        
+        .analysis-summary p {
+            margin: 0;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) { 
+            .crypto-grid { grid-template-columns: 1fr; }
+            .price-display { flex-direction: column; gap: 15px; }
+            .search-box { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: var(--bg-card); padding: 12px 24px; display: flex; gap: 20px; border-bottom: 1px solid var(--border); flex-wrap: wrap;">
+        <a href="/" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">🏠 Home</a>
+        <a href="/analyze" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">📊 Analyze</a>
+        <a href="/charts" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">📈 Charts</a>
+        <a href="/global" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">🌍 Global</a>
+        <a href="/portfolio" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">💼 Portfolio</a>
+        <a href="/watchlist" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">⭐ Watchlist</a>
+        <a href="/crypto" style="color: var(--primary); text-decoration: none; font-size: 14px;">₿ Crypto</a>
+        <a href="/agent" style="color: var(--text-dim); text-decoration: none; font-size: 14px;">🤖 Agent</a>
+    </nav>
+
+    <div class="container">
+        <!-- Analysis Section -->
+        <div class="analysis-section">
+            <h2>🔍 Crypto Analysis</h2>
+            <p class="subtitle">AI-powered analysis for any cryptocurrency</p>
+            
+            <div class="search-box">
+                <input type="text" id="cryptoInput" placeholder="Enter crypto symbol (e.g., BTC, ETH, SOL)..." onkeypress="handleKeyPress(event)">
+                <button onclick="analyzeCrypto()" id="analyzeBtn">Analyze</button>
+            </div>
+            
+            <div id="analysisLoading" style="display: none;">
+                <div class="spinner"></div>
+                <p style="text-align: center; color: var(--text-dim);">Analyzing crypto...</p>
+            </div>
+            
+            <div id="analysisResult" class="analysis-result">
+                <div class="crypto-header">
+                    <div class="crypto-header-info">
+                        <h2 id="resultSymbol">BTC</h2>
+                        <span id="resultName">Bitcoin</span>
+                    </div>
+                    <div class="recommendation" id="resultRec">BUY</div>
+                </div>
+                
+                <div class="price-display">
+                    <div class="price-item">
+                        <div class="price-label">Current Price</div>
+                        <div class="price-value current" id="resultPrice">$0.00</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-label">24h Change</div>
+                        <div class="price-value" id="resultChange">+0.00%</div>
+                    </div>
+                    <div class="price-item">
+                        <div class="price-label">Market Cap</div>
+                        <div class="price-value" id="resultMC">$0</div>
+                    </div>
+                </div>
+                
+                <div class="tech-grid" id="techGrid">
+                    <!-- Technical indicators will be here -->
+                </div>
+                
+                <div class="analysis-summary">
+                    <h4>📊 Analysis Summary</h4>
+                    <p id="resultSummary">Loading analysis...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Crypto Prices -->
+        <div class="header">
+            <h1>₿ Cryptocurrency Prices</h1>
+            <p class="subtitle">Real-time crypto prices from CoinGecko</p>
+            <button class="refresh-btn" onclick="loadCryptos()">🔄 Refresh</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div style="font-size: 3rem; margin-bottom: 20px;">₿</div>
+            <p>Loading cryptocurrency prices...</p>
+        </div>
+        
+        <div id="crypto-grid" class="crypto-grid"></div>
+    </div>
+    
+    <script>
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') {
+                analyzeCrypto();
+            }
+        }
+        
+        async function analyzeCrypto() {
+            const symbol = document.getElementById('cryptoInput').value.trim().toUpperCase();
+            if (!symbol) return;
+            
+            const btn = document.getElementById('analyzeBtn');
+            const loading = document.getElementById('analysisLoading');
+            const result = document.getElementById('analysisResult');
+            
+            btn.disabled = true;
+            loading.style.display = 'block';
+            result.classList.remove('show');
+            
+            try {
+                const response = await fetch(`/api/crypto/analyze?symbol=${symbol}`);
+                const data = await response.json();
+                
+                loading.style.display = 'none';
+                
+                if (data.success) {
+                    document.getElementById('resultSymbol').textContent = data.crypto.symbol;
+                    document.getElementById('resultName').textContent = data.crypto.name;
+                    
+                    const rec = document.getElementById('resultRec');
+                    rec.textContent = data.recommendation;
+                    rec.className = 'recommendation ' + data.recommendation.toLowerCase();
+                    
+                    document.getElementById('resultPrice').textContent = '$' + data.crypto.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                    
+                    const changeEl = document.getElementById('resultChange');
+                    const change = data.crypto.change_24h;
+                    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                    changeEl.style.color = change >= 0 ? 'var(--success)' : 'var(--danger)';
+                    
+                    // Market cap
+                    const mc = data.crypto.market_cap;
+                    let mcStr = '';
+                    if (mc >= 1e12) mcStr = '$' + (mc/1e12).toFixed(2) + 'T';
+                    else if (mc >= 1e9) mcStr = '$' + (mc/1e9).toFixed(2) + 'B';
+                    else if (mc >= 1e6) mcStr = '$' + (mc/1e6).toFixed(2) + 'M';
+                    else mcStr = '$' + mc.toLocaleString();
+                    document.getElementById('resultMC').textContent = mcStr;
+                    
+                    // Technical indicators
+                    const tech = data.technical || {};
+                    const techGrid = document.getElementById('techGrid');
+                    techGrid.innerHTML = `
+                        <div class="tech-item">
+                            <div class="tech-label">RSI (14)</div>
+                            <div class="tech-value" style="color: ${tech.rsi > 70 ? 'var(--danger)' : tech.rsi < 30 ? 'var(--success)' : 'var(--primary)'}">${tech.rsi?.toFixed(1) || 'N/A'}</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-label">SMA 20</div>
+                            <div class="tech-value">$${tech.sma20?.toFixed(2) || 'N/A'}</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-label">SMA 50</div>
+                            <div class="tech-value">$${tech.sma50?.toFixed(2) || 'N/A'}</div>
+                        </div>
+                        <div class="tech-item">
+                            <div class="tech-label">Trend</div>
+                            <div class="tech-value" style="color: ${tech.trend === 'bullish' ? 'var(--success)' : 'var(--danger)'}">${tech.trend || 'N/A'}</div>
+                        </div>
+                    `;
+                    
+                    document.getElementById('resultSummary').textContent = data.summary;
+                    result.classList.add('show');
+                } else {
+                    alert('Crypto not found: ' + symbol);
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                alert('Error: ' + error.message);
+            }
+            
+            btn.disabled = false;
+        }
+        
+        async function loadCryptos() {
+            document.getElementById('crypto-grid').innerHTML = '';
+            document.getElementById('loading').style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/crypto/top?limit=50');
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (!data.success || !data.cryptos || data.cryptos.length === 0) {
+                    document.getElementById('crypto-grid').innerHTML = '<div class="loading">No crypto data available</div>';
+                    return;
+                }
+                
+                const grid = document.getElementById('crypto-grid');
+                grid.innerHTML = data.cryptos.map(crypto => {
+                    const changeClass = crypto.change_24h >= 0 ? 'positive' : 'negative';
+                    const changeSign = crypto.change_24h >= 0 ? '+' : '';
+                    
+                    return `
+                        <div class="crypto-card" onclick="document.getElementById('cryptoInput').value='${crypto.symbol}'; analyzeCrypto();">
+                            <div class="crypto-symbol">${crypto.symbol}</div>
+                            <div class="crypto-name">${crypto.name}</div>
+                            <div class="crypto-price">$${crypto.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: crypto.price < 1 ? 6 : 2})}</div>
+                            <div class="crypto-change ${changeClass}">
+                                ${changeSign}${crypto.change_24h.toFixed(2)}%
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<div style="color: var(--danger);">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Load on page load
+        loadCryptos();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(loadCryptos, 60000);
+    </script>
+</body>
+</html>

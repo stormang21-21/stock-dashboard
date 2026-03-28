@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analyze Stock - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0d1117; padding: 20px; margin: 0; }
+        .container { max-width: 1000px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { color: #c9d1d9; margin-bottom: 10px; font-size: 1.75rem; }
+        .subtitle { color: #8b949e; margin-bottom: 25px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { flex: 1; padding: 12px; border: 2px solid #30363d; border-radius: 10px; font-size: 1rem; }
+        input:focus { outline: none; border-color: #00d4aa; }
+        .btn { padding: 12px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #667eea; text-decoration: none; }
+        .loading { text-align: center; padding: 40px; display: none; }
+        .spinner { width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top-color: #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .results { display: none; margin-top: 25px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-card { background: #0d1117; border-radius: 12px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #667eea; }
+        .result-card h3 { color: #c9d1d9; margin-bottom: 12px; font-size: 1.1rem; }
+        .result-card p { color: #8b949e; line-height: 1.6; }
+        .stock-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: #161b22; border-radius: 10px; }
+        .stock-name { font-size: 1.25rem; font-weight: 700; color: #c9d1d9; }
+        .stock-price { font-size: 1.5rem; font-weight: 800; color: #667eea; }
+        .recommendation { display: inline-block; padding: 8px 16px; border-radius: 20px; font-weight: 700; margin-bottom: 15px; font-size: 0.9rem; }
+        .recommendation.buy { background: #c6f6d5; color: #22543d; }
+        .recommendation.sell { background: #fed7d7; color: #742a2a; }
+        .recommendation.hold { background: #feebc8; color: #744210; }
+        .indicators-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; }
+        .indicator { background: #161b22; padding: 12px; border-radius: 8px; text-align: center; }
+        .indicator-value { font-size: 1.25rem; font-weight: 800; color: #667eea; }
+        .indicator-label { font-size: 0.75rem; color: #8b949e; margin-top: 5px; }
+        .price-targets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .target { background: #161b22; padding: 12px; border-radius: 8px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .target-value { font-size: 1.25rem; font-weight: 800; color: #667eea; }
+        .target-label { font-size: 0.75rem; color: #8b949e; margin-top: 5px; }
+        .error { background: #fed7d7; color: #742a2a; padding: 12px; border-radius: 8px; margin-top: 15px; display: none; }
+        .fallback-notice { background: #feebc8; color: #744210; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 0.875rem; }
+        @media (max-width: 600px) { .search-box { flex-direction: column; } .price-targets { grid-template-columns: 1fr; } .stock-info { flex-direction: column; gap: 10px; text-align: center; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: #161b22; padding: 12px 24px; display: flex; gap: 20px; border-bottom: 1px solid #30363d;">
+        <a href="/" style="color: #8b949e; text-decoration: none; font-size: 14px;">🏠 Home</a>
+        <a href="/analyze" style="color: #8b949e; text-decoration: none; font-size: 14px;">📊 Analyze</a>
+        <a href="/charts" style="color: #8b949e; text-decoration: none; font-size: 14px;">📈 Charts</a>
+        <a href="/global" style="color: #8b949e; text-decoration: none; font-size: 14px;">🌍 Global</a>
+        <a href="/portfolio" style="color: #8b949e; text-decoration: none; font-size: 14px;">💼 Portfolio</a>
+        <a href="/watchlist" style="color: #8b949e; text-decoration: none; font-size: 14px;">⭐ Watchlist</a>
+        <a href="/crypto" style="color: #8b949e; text-decoration: none; font-size: 14px;">₿ Crypto</a>
+        <a href="/agent" style="color: #8b949e; text-decoration: none; font-size: 14px;">🤖 Agent</a>
+    </nav>
+    <div class="container">
+        <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+        <h1>🔍 Analyze Stock</h1>
+        <p class="subtitle">Real-time AI-powered analysis with live market data</p>
+        
+        <div class="search-box">
+            <input type="text" id="stock-input" placeholder="Enter stock symbol (e.g., AAPL, TSLA, GOOGL)">
+            <button class="btn" id="analyze-btn" onclick="analyze()">Analyze</button>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <h3>Fetching Real-Time Data...</h3>
+            <p>AI is analyzing live market data</p>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div class="results" id="results">
+            <div class="fallback-notice" id="fallback-notice" style="display:none;">
+                ⚠️ Real-time data unavailable for this stock. Showing estimated analysis.
+            </div>
+            
+            <div class="stock-info">
+                <div>
+                    <div class="stock-name" id="company-name">Company Name</div>
+                    <div style="color: #8b949e;" id="stock-symbol">SYMBOL</div>
+                </div>
+                <div class="stock-price" id="current-price">$0.00</div>
+            </div>
+            
+            <div class="result-card">
+                <div class="recommendation buy" id="recommendation">🟢 BUY</div>
+                <h3>🤖 AI Analysis</h3>
+                <p id="summary">Loading...</p>
+            </div>
+            
+            <div class="result-card">
+                <h3>📊 Technical Indicators</h3>
+                <div class="indicators-grid">
+                    <div class="indicator">
+                        <div class="indicator-value" id="sma-20">-</div>
+                        <div class="indicator-label">SMA 20</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-value" id="sma-50">-</div>
+                        <div class="indicator-label">SMA 50</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-value" id="rsi">-</div>
+                        <div class="indicator-label">RSI</div>
+                    </div>
+                    <div class="indicator">
+                        <div class="indicator-value" id="macd">-</div>
+                        <div class="indicator-label">MACD</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>💰 Price Targets</h3>
+                <div class="price-targets">
+                    <div class="target">
+                        <div class="target-value" id="target-buy">$0.00</div>
+                        <div class="target-label">Ideal Buy</div>
+                    </div>
+                    <div class="target">
+                        <div class="target-value" id="target-stop">$0.00</div>
+                        <div class="target-label">Stop Loss</div>
+                    </div>
+                    <div class="target">
+                        <div class="target-value" id="target-profit">$0.00</div>
+                        <div class="target-label">Take Profit</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>⚠️ Risk Analysis</h3>
+                <p id="risks">Loading...</p>
+            </div>
+            
+            <div class="result-card">
+                <h3>📰 Latest News</h3>
+                <div id="news-container">Loading news...</div>
+            </div>
+        </div>
+        
+        <div id="placeholder" style="text-align: center; padding: 50px; color: #8b949e;">
+            <div style="font-size: 3rem; margin-bottom: 15px;">📊</div>
+            <h3>Ready to Analyze</h3>
+            <p>Enter a stock symbol to get real-time AI analysis</p>
+        </div>
+    </div>
+    
+    <script>
+        async function analyze() {
+            const symbol = document.getElementById('stock-input').value.trim().toUpperCase();
+            if (!symbol) {
+                alert('Please enter a stock symbol');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('analyze-btn').disabled = true;
+            
+            try {
+                const response = await fetch('/api/analysis/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ stock_codes: [symbol] })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Analysis failed: ' + response.status);
+                }
+                
+                const data = await response.json();
+                displayResults(data.data || data, symbol);
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                document.getElementById('error').textContent = 'Error: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('placeholder').style.display = 'block';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analyze-btn').disabled = false;
+            }
+        }
+        
+        function displayResults(data, symbol) {
+            console.log('Displaying results:', data);
+            
+            // Check if fallback data
+            const isFallback = data.summary && data.summary.includes('Unable to fetch');
+            document.getElementById('fallback-notice').style.display = isFallback ? 'block' : 'none';
+            
+            // Company info
+            document.getElementById('company-name').textContent = data.company || symbol;
+            document.getElementById('stock-symbol').textContent = symbol;
+            const currentPrice = data.price_targets?.current_price || data.price_targets?.ideal_buy || 100;
+            document.getElementById('current-price').textContent = '$' + currentPrice.toFixed(2);
+            
+            // Recommendation
+            const rec = data.recommendation || 'HOLD';
+            const recEl = document.getElementById('recommendation');
+            recEl.className = 'recommendation ' + rec.toLowerCase();
+            recEl.textContent = (rec === 'BUY' ? '🟢' : rec === 'SELL' ? '🔴' : '🟡') + ' ' + rec;
+            
+            // Summary
+            document.getElementById('summary').textContent = data.summary || 'Analysis complete';
+            
+            // Technical indicators (with fallback)
+            const indicators = data.indicators || {};
+            safeSetText('sma-20', indicators.sma_20 ? '$' + indicators.sma_20.toFixed(2) : '-');
+            safeSetText('sma-50', indicators.sma_50 ? '$' + indicators.sma_50.toFixed(2) : '-');
+            safeSetText('rsi', indicators.rsi || '-');
+            safeSetText('macd', indicators.macd || '-');
+            
+            // Price targets
+            const targets = data.price_targets || {};
+            safeSetText('target-buy', '$' + (targets.ideal_buy || 0).toFixed(2));
+            safeSetText('target-stop', '$' + (targets.stop_loss || 0).toFixed(2));
+            safeSetText('target-profit', '$' + (targets.take_profit || 0).toFixed(2));
+            
+            // Risks
+            safeSetText('risks', data.risks || 'Risk analysis available');
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Fetch news
+            fetchNews(symbol);
+        }
+        
+        function safeSetText(id, text) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = text;
+            } else {
+                console.warn('Element not found:', id);
+            }
+        }
+        
+        document.getElementById('stock-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') analyze();
+        });
+        
+        async function fetchNews(symbol) {
+            try {
+                const response = await fetch(`/api/news/${symbol}?limit=3`);
+                const data = await response.json();
+                
+                const container = document.getElementById('news-container');
+                if (data.news && data.news.length > 0) {
+                    container.innerHTML = data.news.map(article => `
+                        <div style="margin-bottom: 15px; padding: 12px; background: #161b22; border-radius: 8px; border-left: 3px solid ${article.sentiment === 'positive' ? '#48bb78' : article.sentiment === 'negative' ? '#f56565' : '#ecc94b'};">
+                            <div style="font-size: 0.875rem; color: #8b949e; margin-bottom: 5px;">
+                                <span style="background: ${article.sentiment === 'positive' ? '#c6f6d5' : article.sentiment === 'negative' ? '#fed7d7' : '#feebc8'}; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">${article.sentiment}</span>
+                                <span style="margin-left: 8px;">${article.source}</span>
+                            </div>
+                            <div style="font-size: 0.9rem; color: #c9d1d9; margin-bottom: 5px;">${article.title}</div>
+                            <div style="font-size: 0.75rem; color: #8b949e;">
+                                ${article.published ? article.published : ''}
+                                ${article.url ? `<a href="${article.url}" target="_blank" style="color: #667eea; text-decoration: none; margin-left: 8px;">Read more →</a>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = '<p style="color: #8b949e;">No recent news available</p>';
+                }
+            } catch (error) {
+                console.error('News error:', error);
+                document.getElementById('news-container').innerHTML = '<p style="color: #8b949e;">Unable to load news</p>';
+            }
+        }
+        
+        document.getElementById('stock-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') analyze();
+        });
+        
+        document.getElementById('stock-input').focus();
+    </script>
+</body>
+</html>

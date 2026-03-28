@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Payment Successful! - Daily Stock Analysis</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .success-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideUp 0.6s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            animation: scaleIn 0.4s ease 0.2s both;
+        }
+        
+        @keyframes scaleIn {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
+        
+        h1 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .plan-badge {
+            display: inline-block;
+            background: var(--gradient);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            color: #718096;
+            font-size: 1.125rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .order-details {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+        
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .order-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--primary);
+        }
+        
+        .next-steps {
+            text-align: left;
+            margin-bottom: 30px;
+        }
+        
+        .next-steps h3 {
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .step:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        .step-number {
+            width: 30px;
+            height: 30px;
+            background: var(--gradient);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .step-content {
+            flex: 1;
+        }
+        
+        .step-content h4 {
+            color: var(--dark);
+            margin-bottom: 5px;
+        }
+        
+        .step-content p {
+            color: #718096;
+            font-size: 0.875rem;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 16px 32px;
+            border-radius: 10px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: var(--gradient);
+            color: white;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .support-info {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .support-info p {
+            color: #718096;
+            font-size: 0.875rem;
+            margin-bottom: 10px;
+        }
+        
+        .support-info a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        @media (max-width: 430px) {
+            .success-container { padding: 30px 20px; }
+            h1 { font-size: 1.5rem; }
+            .success-icon { width: 80px; height: 80px; font-size: 2.5rem; }
+            .buttons { flex-direction: column; }
+            .btn { width: 100%; }
+            .step { flex-direction: column; text-align: center; }
+            .step-number { margin: 0 auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✓</div>
+        
+        <h1>Payment Successful!</h1>
+        
+        <div class="plan-badge" id="plan-name">🎉 Pro Plan Activated</div>
+        
+        <p class="message">
+            Thank you for subscribing! Your account has been upgraded and you now have full access to all features.
+        </p>
+        
+        <div class="order-details">
+            <div class="order-row">
+                <span>Plan:</span>
+                <span id="order-plan">Pro Plan</span>
+            </div>
+            <div class="order-row">
+                <span>Amount:</span>
+                <span id="order-amount">$99.00</span>
+            </div>
+            <div class="order-row">
+                <span>Transaction ID:</span>
+                <span id="order-id">txn_123456</span>
+            </div>
+            <div class="order-row">
+                <span>Billing Date:</span>
+                <span id="order-date">Today</span>
+            </div>
+        </div>
+        
+        <div class="next-steps">
+            <h3>What's Next?</h3>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Check Your Email</h4>
+                    <p>We've sent a confirmation email with your receipt and login details.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Go to Dashboard</h4>
+                    <p>Start analyzing stocks with AI-powered insights right away.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Explore Features</h4>
+                    <p>Try backtesting, portfolio tracking, and multi-market analysis.</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Need Help?</h4>
+                    <p>Check our <a href="/web/QUICK_START.md" style="color: var(--primary);">Quick Start Guide</a> or contact support.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <a href="/admin" class="btn btn-primary">Go to Dashboard →</a>
+            <a href="/web/QUICK_START.md" class="btn btn-secondary">Quick Start Guide</a>
+        </div>
+        
+        <div class="support-info">
+            <p>📧 Questions? Email us at <a href="mailto:support@dailystockanalysis.com">support@dailystockanalysis.com</a></p>
+            <p>💬 Live Chat: Click the chat icon in your dashboard</p>
+            <p>📚 Help Center: <a href="/web/HELP_CENTER.md">/web/HELP_CENTER.md</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const plan = urlParams.get('plan') || 'Pro';
+        const amount = urlParams.get('amount') || '99.00';
+        const transactionId = urlParams.get('transaction_id') || 'txn_' + Date.now();
+        
+        // Update page with order details
+        document.getElementById('plan-name').textContent = `🎉 ${plan} Plan Activated`;
+        document.getElementById('order-plan').textContent = `${plan} Plan`;
+        document.getElementById('order-amount').textContent = `$${parseFloat(amount).toFixed(2)}`;
+        document.getElementById('order-id').textContent = transactionId;
+        document.getElementById('order-date').textContent = new Date().toLocaleDateString();
+        
+        // Auto-redirect to dashboard after 10 seconds
+        setTimeout(() => {
+            // Could show a notification here
+        }, 10000);
+        
+        // Track conversion (for analytics)
+        console.log('Conversion tracked:', {
+            plan: plan,
+            amount: amount,
+            transaction_id: transactionId,
+            timestamp: new Date().toISOString()
+        });
+    </script>
+</body>
+</html>

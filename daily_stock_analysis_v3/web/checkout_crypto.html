@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Checkout - DSA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container { max-width: 900px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .card h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        .payment-method-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .payment-method {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-method:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .payment-method.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .payment-method .icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .payment-method .name {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        .crypto-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .crypto-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .crypto-option:hover {
+            border-color: #667eea;
+        }
+        .crypto-option.selected {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        .crypto-option .logo {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+        }
+        .crypto-option .code {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .crypto-option .amount {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        .payment-address {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+        }
+        .address-box {
+            background: white;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            word-break: break-all;
+            margin: 10px 0;
+        }
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+        .timer {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .timer-countdown {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .status-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border-left: 3px solid #e0e0e0;
+            margin: 10px 0;
+        }
+        .status-step.completed {
+            border-left-color: #4ade80;
+        }
+        .status-step.completed .status-icon {
+            background: #4ade80;
+            color: white;
+        }
+        .status-step.active {
+            border-left-color: #667eea;
+        }
+        .status-step.active .status-icon {
+            background: #667eea;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        .status-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .btn-back {
+            background: #f5f5f5;
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+        .btn-back:hover {
+            background: #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💳 + ₿ Payment</h1>
+            <p>Choose your preferred payment method</p>
+        </div>
+
+        <!-- Payment Method Selection -->
+        <div class="card" id="method-card">
+            <h2>Select Payment Method</h2>
+            <div class="payment-method-selector">
+                <div class="payment-method selected" onclick="selectMethod('fiat')">
+                    <div class="icon">💳</div>
+                    <div class="name">Credit/Debit Card</div>
+                    <div style="margin-top:10px;font-size:0.9rem;opacity:0.8;">Visa, Mastercard, Amex</div>
+                </div>
+                <div class="payment-method" onclick="selectMethod('crypto')">
+                    <div class="icon">₿</div>
+                    <div class="name">Cryptocurrency</div>
+                    <div style="margin-top:10px;font-size:0.9rem;opacity:0.8;">BTC, ETH, USDT, USDC</div>
+                </div>
+            </div>
+            <button class="btn-back" onclick="window.location.href='/upgrade'">← Back to Plans</button>
+        </div>
+
+        <!-- Fiat Checkout (Stripe) -->
+        <div class="card" id="fiat-card" style="display:none;">
+            <h2>Card Payment</h2>
+            <p style="color:#666;margin-bottom:20px;">Powered by Stripe - Secure & Encrypted</p>
+            <!-- Redirect to Stripe checkout -->
+            <button class="btn-pay" onclick="window.location.href='/checkout/card?plan=' + plan">
+                Continue to Card Payment →
+            </button>
+        </div>
+
+        <!-- Crypto Checkout -->
+        <div class="card" id="crypto-card" style="display:none;">
+            <h2>Cryptocurrency Payment</h2>
+            
+            <!-- Crypto Selection -->
+            <div id="crypto-selection">
+                <h3 style="margin-bottom:15px;">Select Cryptocurrency</h3>
+                <div class="crypto-grid">
+                    <div class="crypto-option" onclick="selectCrypto('BTC')">
+                        <div style="font-size:2.5rem;">₿</div>
+                        <div class="code">Bitcoin</div>
+                        <div class="amount" id="btc-amount">0.00065 BTC</div>
+                    </div>
+                    <div class="crypto-option" onclick="selectCrypto('ETH')">
+                        <div style="font-size:2.5rem;">♦</div>
+                        <div class="code">Ethereum</div>
+                        <div class="amount" id="eth-amount">0.0097 ETH</div>
+                    </div>
+                    <div class="crypto-option" onclick="selectCrypto('USDT')">
+                        <div style="font-size:2.5rem;">₮</div>
+                        <div class="code">Tether</div>
+                        <div class="amount" id="usdt-amount">29.00 USDT</div>
+                    </div>
+                    <div class="crypto-option" onclick="selectCrypto('USDC')">
+                        <div style="font-size:2.5rem;">💵</div>
+                        <div class="code">USD Coin</div>
+                        <div class="amount" id="usdc-amount">29.00 USDC</div>
+                    </div>
+                </div>
+                
+                <button class="btn-pay" onclick="generatePaymentAddress()" style="margin-top:20px;">
+                    Generate Payment Address
+                </button>
+            </div>
+
+            <!-- Payment Address -->
+            <div id="payment-address" style="display:none;">
+                <div class="timer">
+                    <div>Payment expires in</div>
+                    <div class="timer-countdown" id="countdown">15:00</div>
+                </div>
+                
+                <div class="payment-address">
+                    <div class="qr-code" id="qr-code">📱</div>
+                    <div style="font-weight:600;margin-bottom:10px;">Send exactly <span id="crypto-amount-display">0.00065</span> <span id="crypto-code-display">BTC</span></div>
+                    <div style="color:#666;font-size:0.9rem;margin-bottom:10px;">to this address:</div>
+                    <div class="address-box" id="wallet-address">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</div>
+                    <button class="copy-btn" onclick="copyAddress()">📋 Copy Address</button>
+                </div>
+
+                <!-- Payment Status -->
+                <div style="margin-top:30px;">
+                    <h3 style="margin-bottom:15px;">Payment Status</h3>
+                    <div class="status-step" id="step1">
+                        <div class="status-icon">1</div>
+                        <div>
+                            <div style="font-weight:600;">Send cryptocurrency</div>
+                            <div style="font-size:0.9rem;color:#666;">Send exact amount to the address above</div>
+                        </div>
+                    </div>
+                    <div class="status-step" id="step2">
+                        <div class="status-icon">2</div>
+                        <div>
+                            <div style="font-weight:600;">Waiting for confirmations</div>
+                            <div style="font-size:0.9rem;color:#666;">Blockchain confirmations required</div>
+                        </div>
+                    </div>
+                    <div class="status-step" id="step3">
+                        <div class="status-icon">3</div>
+                        <div>
+                            <div style="font-weight:600;">Payment complete!</div>
+                            <div style="font-size:0.9rem;color:#666;">Activating your subscription</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-back" onclick="resetCrypto()" style="margin-top:20px;">← Choose Different Crypto</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const plan = urlParams.get('plan') || 'basic';
+        const planPrices = { 'basic': 29, 'pro': 99, 'enterprise': 499 };
+        const amount = planPrices[plan] || 29;
+
+        // Crypto rates (would come from API in production)
+        const cryptoRates = {
+            'BTC': 45000,
+            'ETH': 3000,
+            'USDT': 1,
+            'USDC': 1,
+        };
+
+        function selectMethod(method) {
+            document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+
+            if (method === 'fiat') {
+                document.getElementById('fiat-card').style.display = 'block';
+                document.getElementById('crypto-card').style.display = 'none';
+            } else {
+                document.getElementById('fiat-card').style.display = 'none';
+                document.getElementById('crypto-card').style.display = 'block';
+            }
+        }
+
+        function selectCrypto(crypto) {
+            document.querySelectorAll('.crypto-option').forEach(c => c.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            const rate = cryptoRates[crypto] || 1;
+            const cryptoAmount = (amount / rate).toFixed(crypto === 'BTC' || crypto === 'ETH' ? 6 : 2);
+            
+            document.getElementById(`${crypto.toLowerCase()}-amount`).textContent = `${cryptoAmount} ${crypto}`;
+        }
+
+        function generatePaymentAddress() {
+            const selectedCrypto = document.querySelector('.crypto-option.selected');
+            if (!selectedCrypto) {
+                alert('Please select a cryptocurrency first');
+                return;
+            }
+
+            const crypto = selectedCrypto.querySelector('.code').textContent.trim();
+            const rate = cryptoRates[crypto] || 1;
+            const cryptoAmount = (amount / rate).toFixed(crypto === 'BTC' || crypto === 'ETH' ? 6 : 2);
+
+            // In production, this would call API to generate real address
+            const fakeAddresses = {
+                'BTC': 'bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh',
+                'ETH': '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE21',
+                'USDT': '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE21',
+                'USDC': '0x742d35Cc6634C0532925a3b844Bc9e7595f8fE21',
+            };
+
+            document.getElementById('crypto-amount-display').textContent = cryptoAmount;
+            document.getElementById('crypto-code-display').textContent = crypto;
+            document.getElementById('wallet-address').textContent = fakeAddresses[crypto] || 'address';
+            
+            document.getElementById('crypto-selection').style.display = 'none';
+            document.getElementById('payment-address').style.display = 'block';
+            
+            // Start countdown
+            startCountdown(15 * 60); // 15 minutes
+            
+            // Simulate payment detection
+            setTimeout(() => {
+                updateStep('step1', true);
+                updateStep('step2', true);
+            }, 5000);
+            
+            setTimeout(() => {
+                updateStep('step2', true);
+                updateStep('step3', true);
+                completePayment();
+            }, 15000);
+        }
+
+        function startCountdown(seconds) {
+            let remaining = seconds;
+            const countdownEl = document.getElementById('countdown');
+            
+            const interval = setInterval(() => {
+                const minutes = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                countdownEl.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+                
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    alert('Payment window expired. Please generate a new address.');
+                    resetCrypto();
+                }
+                
+                remaining--;
+            }, 1000);
+        }
+
+        function updateStep(stepId, active) {
+            const step = document.getElementById(stepId);
+            if (active) {
+                step.classList.add('completed');
+                step.classList.add('active');
+            }
+        }
+
+        function completePayment() {
+            // In production, verify payment via API
+            fetch('/api/saas/verify-crypto-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ plan: plan, crypto: 'BTC' }),
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    alert('🎉 Payment confirmed! Subscription activated.');
+                    window.location.href = '/admin?subscription=active';
+                }
+            });
+        }
+
+        function copyAddress() {
+            const address = document.getElementById('wallet-address').textContent;
+            navigator.clipboard.writeText(address).then(() => {
+                alert('Address copied to clipboard!');
+            });
+        }
+
+        function resetCrypto() {
+            document.getElementById('crypto-selection').style.display = 'block';
+            document.getElementById('payment-address').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

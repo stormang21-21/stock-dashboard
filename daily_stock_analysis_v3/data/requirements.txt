@@ -1,0 +1,16 @@
+# Data Layer Dependencies
+
+# Chinese stock data
+akshare>=1.12.0
+efinance>=0.5.5
+
+# US/HK stock data
+yfinance>=0.2.0
+
+# Data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# HTTP requests (already in main requirements)
+# httpx>=0.26.0
+# aiohttp>=3.9.0

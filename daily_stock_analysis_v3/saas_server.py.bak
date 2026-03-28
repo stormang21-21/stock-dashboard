@@ -1,0 +1,479 @@
+#!/usr/bin/env python3
+"""
+Daily Stock Analysis SaaS Server
+"""
+
+from fastapi import FastAPI, HTTPException, Header, Request
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import Optional, Dict, Any, List
+import uvicorn
+import logging
+from pathlib import Path
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Create FastAPI app
+app = FastAPI(
+    title="Daily Stock Analysis SaaS Platform",
+    description="AI-powered stock analysis platform",
+    version="3.0.0",
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Import managers
+from saas import TenantManager, ModuleRegistry, SubscriptionTier
+from saas.manager import get_tenant_manager
+from saas.modules import get_module_registry
+from admin.api import get_admin_api
+from payments import PaymentProcessor, get_payment_processor
+from modules.email import EmailService
+
+# Initialize managers
+tenant_manager = get_tenant_manager()
+module_registry = get_module_registry()
+admin_api = get_admin_api()
+payment_processor = get_payment_processor()
+email_service = EmailService()
+
+# Pydantic models
+class OnboardingRequest(BaseModel):
+    name: str
+    email: str
+    company: Optional[str] = ""
+    tier: str = "free"
+    markets: List[str] = []
+
+# ============ LANDING PAGE (ROOT) ============
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Landing page - MAIN PAGE"""
+    landing_path = Path(__file__).parent / "modules" / "landing" / "index.html"
+    if landing_path.exists():
+        logger.info("Serving landing page")
+        return FileResponse(str(landing_path))
+    raise HTTPException(status_code=404, detail="Landing page not found")
+
+# ============ ONBOARDING ============
+@app.get("/onboarding", response_class=HTMLResponse)
+async def onboarding_page():
+    """Onboarding page"""
+    onboarding_path = Path(__file__).parent / "web" / "onboarding" / "index.html"
+    if onboarding_path.exists():
+        return FileResponse(str(onboarding_path))
+    raise HTTPException(status_code=404, detail="Onboarding page not found")
+
+@app.post("/api/saas/onboard")
+async def onboard_tenant(data: OnboardingRequest):
+    """Onboard a new tenant"""
+    result = admin_api.onboard_tenant(data.dict())
+    if not result['success']:
+        raise HTTPException(status_code=400, detail=result['error'])
+    return result
+
+# ============ CHECKOUT ============
+@app.get("/checkout", response_class=HTMLResponse)
+async def checkout_page(plan: str = "basic"):
+    """Checkout page"""
+    checkout_path = Path(__file__).parent / "web" / "checkout.html"
+    if checkout_path.exists():
+        return FileResponse(str(checkout_path))
+    raise HTTPException(status_code=404, detail="Checkout page not found")
+
+@app.get("/checkout/crypto", response_class=HTMLResponse)
+async def checkout_crypto(plan: str = "basic"):
+    """Crypto checkout page"""
+    crypto_path = Path(__file__).parent / "web" / "checkout_crypto.html"
+    if crypto_path.exists():
+        return FileResponse(str(crypto_path))
+    raise HTTPException(status_code=404, detail="Crypto checkout not found")
+
+@app.get("/checkout/singapore", response_class=HTMLResponse)
+async def checkout_singapore(plan: str = "basic"):
+    """Singapore checkout page"""
+    sg_path = Path(__file__).parent / "web" / "checkout_singapore.html"
+    if sg_path.exists():
+        return FileResponse(str(sg_path))
+    raise HTTPException(status_code=404, detail="Singapore checkout not found")
+
+# ============ UPGRADE ============
+@app.get("/upgrade", response_class=HTMLResponse)
+async def upgrade_page():
+    """Upgrade page"""
+    upgrade_path = Path(__file__).parent / "web" / "upgrade_page.html"
+    if upgrade_path.exists():
+        return FileResponse(str(upgrade_path))
+    raise HTTPException(status_code=404, detail="Upgrade page not found")
+
+# ============ ADMIN DASHBOARD ============
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard():
+    """Admin dashboard"""
+    admin_path = Path(__file__).parent / "admin" / "dashboard.html"
+    if admin_path.exists():
+        return FileResponse(str(admin_path))
+    raise HTTPException(status_code=404, detail="Admin dashboard not found")
+
+# ============ API DOCS ============
+# FastAPI auto-generates /docs and /openapi.json
+
+# ============ PAYMENT APIs ============
+@app.post("/api/saas/payment-intent")
+async def create_payment_intent(
+    plan: str,
+    amount: float,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Create payment intent"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    customer_id = payment_processor.setup_customer(
+        tenant_id=tenant.id,
+        email=tenant.email,
+        name=tenant.name,
+    )
+    
+    result = payment_processor.create_payment_intent(
+        tenant_id=tenant.id,
+        amount=amount,
+        payment_type='subscription',
+    )
+    
+    return result
+
+@app.post("/api/saas/activate-subscription")
+async def activate_subscription(
+    plan: str,
+    payment_intent_id: str,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Activate subscription after payment"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    result = admin_api.upgrade_tenant(tenant.id, plan)
+    
+    if result['success']:
+        plan_prices = {'basic': 29, 'pro': 99, 'enterprise': 499}
+        payment_processor.create_invoice(
+            tenant_id=tenant.id,
+            amount=plan_prices.get(plan, 29),
+            description=f'{plan.capitalize()} Plan Subscription',
+        )
+    
+    return result
+
+@app.post("/api/saas/crypto-charge")
+async def create_crypto_charge(
+    plan: str,
+    crypto_currency: str,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Create crypto charge"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    plan_prices = {'basic': 29, 'pro': 99, 'enterprise': 499}
+    amount = plan_prices.get(plan, 29)
+    
+    charge = payment_processor.create_crypto_charge(
+        tenant_id=tenant.id,
+        amount=amount,
+        crypto_currency=crypto_currency,
+    )
+    
+    return {
+        'success': True,
+        'charge': charge,
+    }
+
+@app.post("/api/saas/verify-crypto-payment")
+async def verify_crypto_payment(
+    charge_id: str,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Verify crypto payment"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    verification = payment_processor.verify_crypto_payment(charge_id)
+    
+    if verification.get('verified'):
+        result = admin_api.upgrade_tenant(tenant.id, 'pro')
+        return {
+            'success': True,
+            'verified': True,
+            'subscription': result,
+        }
+    
+    return {
+        'success': False,
+        'verified': False,
+        'status': verification.get('status'),
+    }
+
+@app.post("/api/saas/invoice")
+async def create_invoice(
+    amount: float,
+    description: str,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Create one-time invoice"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    result = payment_processor.create_invoice(
+        tenant_id=tenant.id,
+        amount=amount,
+        description=description,
+    )
+    
+    return result
+
+@app.get("/api/saas/invoices")
+async def get_invoices(x_api_key: Optional[str] = Header(None)):
+    """Get tenant invoices"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    invoices = payment_processor.get_invoices(tenant.id)
+    
+    return {
+        'success': True,
+        'invoices': [inv.to_dict() for inv in invoices],
+    }
+
+# ============ UTILITY APIs ============
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "tenants": len(tenant_manager.tenants),
+        "modules": len(module_registry.market_modules) + len(module_registry.feature_modules),
+    }
+
+@app.get("/api/saas/usage")
+async def get_usage(x_api_key: Optional[str] = Header(None)):
+    """Get current usage with upgrade triggers"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    usage = tenant_manager.get_usage_report(tenant.id)
+    
+    return {
+        'success': True,
+        'usage': usage,
+    }
+
+@app.post("/api/saas/upgrade")
+async def upgrade_plan(
+    tier: str,
+    x_api_key: Optional[str] = Header(None),
+):
+    """Upgrade subscription"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    result = admin_api.upgrade_tenant(tenant.id, tier)
+    return result
+
+@app.get("/api/saas/trial")
+async def check_trial(x_api_key: Optional[str] = Header(None)):
+    """Check Pro trial status"""
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    trial_end = tenant.config.get('trial_end_date')
+    
+    if trial_end:
+        from datetime import date
+        end_date = date.fromisoformat(trial_end)
+        days_left = (end_date - date.today()).days
+        
+        if days_left >= 0:
+            return {
+                'success': True,
+                'on_trial': True,
+                'days_remaining': days_left,
+                'trial_end': trial_end,
+            }
+    
+    return {
+        'success': True,
+        'on_trial': False,
+    }
+
+@app.post("/api/saas/start-trial")
+async def start_pro_trial(x_api_key: Optional[str] = Header(None)):
+    """Start 7-day Pro trial"""
+    from saas.free_tier import get_free_tier_manager
+    
+    if not x_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    
+    tenant = tenant_manager.get_tenant_by_api_key(x_api_key)
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    
+    free_tier = get_free_tier_manager()
+    result = free_tier.start_pro_trial(tenant)
+    
+    return result
+
+@app.get("/api/saas/comparison")
+async def get_plan_comparison():
+    """Get plan comparison table"""
+    from saas.free_tier import get_free_tier_manager
+    
+    free_tier = get_free_tier_manager()
+    return {
+        'success': True,
+        'comparison': free_tier.get_upgrade_comparison(),
+    }
+
+@app.get("/api/saas/modules")
+async def list_available_modules(tier: Optional[str] = None):
+    """List available modules"""
+    result = module_registry.get_available_modules_for_tier(tier) if tier else {
+        'markets': module_registry.list_markets(),
+        'features': module_registry.list_features(),
+    }
+    
+    return {
+        'success': True,
+        'modules': result,
+    }
+
+# ============ SUCCESS PAGE (Post-Payment) ============
+@app.get("/success", response_class=HTMLResponse)
+async def success_page(
+    plan: Optional[str] = "Pro",
+amount: Optional[str] = "99.00",
+    transaction_id: Optional[str] = None,
+):
+    """Payment success page"""
+    success_path = Path(__file__).parent / "web" / "success.html"
+    if success_path.exists():
+        return FileResponse(str(success_path))
+    raise HTTPException(status_code=404, detail="Success page not found")
+
+
+# ============ USER DASHBOARD (Main Tools Page) ============
+@app.get("/dashboard", response_class=HTMLResponse)
+async def user_dashboard():
+    """Main user dashboard with all tools"""
+    dashboard_path = Path(__file__).parent / "web" / "dashboard.html"
+    if dashboard_path.exists():
+        return FileResponse(str(dashboard_path))
+    raise HTTPException(status_code=404, detail="Dashboard not found")
+
+
+
+# ============ ANALYZE PAGE ============
+@app.get("/analyze", response_class=HTMLResponse)
+async def analyze_page():
+    """Stock analysis tool page"""
+    analyze_path = Path(__file__).parent / "web" / "analyze.html"
+    if analyze_path.exists():
+        return FileResponse(str(analyze_path))
+    return HTMLResponse(content="<h1>Analyze page not found</h1>", status_code=404)
+
+# ============ PORTFOLIO PAGE ============
+@app.get("/portfolio", response_class=HTMLResponse)
+async def portfolio_page():
+    """Portfolio management page"""
+    portfolio_path = Path(__file__).parent / "web" / "portfolio.html"
+    if portfolio_path.exists():
+        return FileResponse(str(portfolio_path))
+    return HTMLResponse(content="<h1>Portfolio page not found</h1>", status_code=404)
+
+# ============ BACKTEST PAGE ============
+@app.get("/backtest", response_class=HTMLResponse)
+async def backtest_page():
+    """Backtesting tool page"""
+    backtest_path = Path(__file__).parent / "web" / "backtest.html"
+    if backtest_path.exists():
+        return FileResponse(str(backtest_path))
+    return HTMLResponse(content="<h1>Backtest page not found</h1>", status_code=404)
+
+# ============ NEWS PAGE ============
+@app.get("/news", response_class=HTMLResponse)
+async def news_page():
+    """News and sentiment page"""
+    news_path = Path(__file__).parent / "web" / "news.html"
+    if news_path.exists():
+        return FileResponse(str(news_path))
+    return HTMLResponse(content="<h1>News page not found</h1>", status_code=404)
+
+    </script>
+</body>
+</html>
+    """)
+
+# ============ PORTFOLIO PAGE ============
+@app.get("/portfolio", response_class=HTMLResponse)
+async def portfolio_page():
+    """Portfolio management page"""
+    return FileResponse(Path(__file__).parent / "web" / "analyze.html")
+
+# ============ BACKTEST PAGE ============
+@app.get("/backtest", response_class=HTMLResponse)
+async def backtest_page():
+    """Backtesting tool page"""
+    return FileResponse(Path(__file__).parent / "web" / "analyze.html")
+
+# ============ NEWS PAGE ============
+@app.get("/news", response_class=HTMLResponse)
+async def news_page():
+    """News and sentiment page"""
+    return FileResponse(Path(__file__).parent / "web" / "analyze.html")

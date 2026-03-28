@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stock News - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0d1117; padding: 20px; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { color: #c9d1d9; margin-bottom: 10px; }
+        .subtitle { color: #8b949e; margin-bottom: 25px; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 30px; }
+        input { flex: 1; padding: 12px; border: 2px solid #30363d; border-radius: 10px; font-size: 1rem; }
+        input:focus { outline: none; border-color: #00d4aa; }
+        .btn { padding: 12px 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #667eea; text-decoration: none; }
+        .news-item { background: #161b22; padding: 20px; margin-bottom: 15px; border-radius: 12px; border-left: 4px solid #e2e8f0; }
+        .news-item.positive { border-left-color: #48bb78; }
+        .news-item.negative { border-left-color: #f56565; }
+        .news-item.neutral { border-left-color: #ecc94b; }
+        .sentiment-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; }
+        .sentiment-badge.positive { background: #c6f6d5; color: #22543d; }
+        .sentiment-badge.negative { background: #fed7d7; color: #742a2a; }
+        .sentiment-badge.neutral { background: #feebc8; color: #744210; }
+        .news-title { font-size: 1.1rem; color: #c9d1d9; margin-bottom: 8px; font-weight: 600; }
+        .news-meta { font-size: 0.875rem; color: #8b949e; }
+        .news-source { background: #edf2f7; padding: 2px 8px; border-radius: 10px; margin-right: 8px; }
+        .read-more { color: #667eea; text-decoration: none; font-weight: 600; }
+        .loading { text-align: center; padding: 40px; color: #8b949e; }
+        .error { background: #fed7d7; color: #742a2a; padding: 15px; border-radius: 10px; margin-top: 15px; }
+        @media (max-width: 600px) { .search-box { flex-direction: column; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: #161b22; padding: 12px 24px; display: flex; gap: 20px; border-bottom: 1px solid #30363d;">
+        <a href="/" style="color: #8b949e; text-decoration: none; font-size: 14px;">🏠 Home</a>
+        <a href="/analyze" style="color: #8b949e; text-decoration: none; font-size: 14px;">📊 Analyze</a>
+        <a href="/charts" style="color: #8b949e; text-decoration: none; font-size: 14px;">📈 Charts</a>
+        <a href="/global" style="color: #8b949e; text-decoration: none; font-size: 14px;">🌍 Global</a>
+        <a href="/portfolio" style="color: #8b949e; text-decoration: none; font-size: 14px;">💼 Portfolio</a>
+        <a href="/watchlist" style="color: #8b949e; text-decoration: none; font-size: 14px;">⭐ Watchlist</a>
+        <a href="/crypto" style="color: #8b949e; text-decoration: none; font-size: 14px;">₿ Crypto</a>
+        <a href="/agent" style="color: #8b949e; text-decoration: none; font-size: 14px;">🤖 Agent</a>
+    </nav>
+    <div class="container">
+        <a href="/analyze" class="back-link">← Back to Analysis</a>
+        <h1>📰 Stock News</h1>
+        <p class="subtitle">Real-time news with AI sentiment analysis</p>
+        
+        <div class="search-box">
+            <input type="text" id="symbol-input" placeholder="Enter stock symbol (e.g., AAPL, TSLA)">
+            <button class="btn" onclick="fetchNews()">Get News</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display:none;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">⏳</div>
+            <p>Fetching latest news...</p>
+        </div>
+        
+        <div id="error" class="error" style="display:none;"></div>
+        
+        <div id="news-container"></div>
+    </div>
+    
+    <script>
+        async function fetchNews() {
+            const symbol = document.getElementById('symbol-input').value.trim().toUpperCase();
+            if (!symbol) {
+                alert('Please enter a stock symbol');
+                return;
+            }
+            
+            document.getElementById('news-container').innerHTML = '';
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            
+            try {
+                const response = await fetch(`/api/news/${symbol}?limit=10`);
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                if (!data.success || !data.news || data.news.length === 0) {
+                    document.getElementById('error').textContent = 'No news found for ' + symbol;
+                    document.getElementById('error').style.display = 'block';
+                    return;
+                }
+                
+                const container = document.getElementById('news-container');
+                container.innerHTML = data.news.map(article => {
+                    const sentimentClass = article.sentiment || 'neutral';
+                    return `
+                        <div class="news-item ${sentimentClass}">
+                            <div class="sentiment-badge ${sentimentClass}">${sentimentClass}</div>
+                            <div class="news-title">${article.title}</div>
+                            <div class="news-meta">
+                                <span class="news-source">${article.source || 'Unknown'}</span>
+                                ${article.published ? `<span>📅 ${article.published}</span>` : ''}
+                                ${article.url ? `<br><a href="${article.url}" target="_blank" class="read-more">Read more →</a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').textContent = 'Error: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+            }
+        }
+        
+        document.getElementById('symbol-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') fetchNews();
+        });
+        
+        // Auto-load popular stock
+        document.getElementById('symbol-input').value = 'AAPL';
+        fetchNews();
+    </script>
+</body>
+</html>

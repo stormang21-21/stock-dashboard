@@ -1,0 +1,4 @@
+{"type": "init", "timestamp": "2026-03-25T04:31:21.959003", "query": "Analyze AAPL"}
+{"type": "thinking", "timestamp": "2026-03-25T04:31:21.959061", "thought": "Starting research: Analyze AAPL"}
+{"type": "thinking", "timestamp": "2026-03-25T04:31:21.959077", "thought": "Planning research steps..."}
+{"type": "error", "timestamp": "2026-03-25T04:31:21.959089", "error": "cannot access local variable 're' where it is not associated with a value"}

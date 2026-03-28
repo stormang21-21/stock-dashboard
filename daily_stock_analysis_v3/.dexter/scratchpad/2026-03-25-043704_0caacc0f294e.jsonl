@@ -1,0 +1,5 @@
+{"type": "init", "timestamp": "2026-03-25T04:37:04.011299", "query": "hello"}
+{"type": "thinking", "timestamp": "2026-03-25T04:37:04.011375", "thought": "Starting research: hello"}
+{"type": "thinking", "timestamp": "2026-03-25T04:37:04.011390", "thought": "Planning research steps..."}
+{"type": "thinking", "timestamp": "2026-03-25T04:37:04.011453", "thought": "Validating results..."}
+{"type": "result", "timestamp": "2026-03-25T04:37:04.011489", "query": "hello", "results": {}, "validation": {"valid": false, "confidence": 0.4, "issues": ["Empty data returned"], "suggestions": ["Add summary"]}, "log_file": ".dexter/scratchpad/2026-03-25-043704_0caacc0f294e.jsonl"}

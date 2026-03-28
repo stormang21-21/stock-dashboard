@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Performance Analytics - Daily Stock Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0d1117; padding: 20px; margin: 0; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #161b22; padding: 30px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        h1 { color: #c9d1d9; margin-bottom: 10px; }
+        .subtitle { color: #8b949e; margin-bottom: 25px; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .metric-card { background: #161b22; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .metric-label { font-size: 0.875rem; color: #8b949e; margin-bottom: 5px; }
+        .metric-value { font-size: 1.5rem; font-weight: 800; }
+        .positive { color: #48bb78; }
+        .negative { color: #f56565; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: #161b22; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .chart-title { font-size: 1.1rem; font-weight: 700; color: #c9d1d9; margin-bottom: 15px; }
+        .chart-container { position: relative; height: 300px; }
+        .performers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .performers-card { background: #161b22; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .performer-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+        .performer-item:last-child { border-bottom: none; }
+        .performer-symbol { font-weight: 700; color: #c9d1d9; }
+        .performer-pnl { font-weight: 700; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #667eea; text-decoration: none; }
+        .loading { text-align: center; padding: 60px; color: #8b949e; }
+        @media (max-width: 768px) { .charts-grid, .performers-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav style="background: #161b22; padding: 12px 24px; display: flex; gap: 20px; border-bottom: 1px solid #30363d;">
+        <a href="/" style="color: #8b949e; text-decoration: none; font-size: 14px;">🏠 Home</a>
+        <a href="/analyze" style="color: #8b949e; text-decoration: none; font-size: 14px;">📊 Analyze</a>
+        <a href="/charts" style="color: #8b949e; text-decoration: none; font-size: 14px;">📈 Charts</a>
+        <a href="/global" style="color: #8b949e; text-decoration: none; font-size: 14px;">🌍 Global</a>
+        <a href="/portfolio" style="color: #8b949e; text-decoration: none; font-size: 14px;">💼 Portfolio</a>
+        <a href="/watchlist" style="color: #8b949e; text-decoration: none; font-size: 14px;">⭐ Watchlist</a>
+        <a href="/crypto" style="color: #8b949e; text-decoration: none; font-size: 14px;">₿ Crypto</a>
+        <a href="/agent" style="color: #8b949e; text-decoration: none; font-size: 14px;">🤖 Agent</a>
+    </nav>
+    <div class="container">
+        <a href="/portfolio" class="back-link">← Back to Portfolio</a>
+        
+        <div class="header">
+            <h1>📊 Performance Analytics</h1>
+            <p class="subtitle">Analyze your portfolio performance and returns</p>
+            <button class="btn" onclick="loadAnalytics()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer;">🔄 Refresh</button>
+        </div>
+        
+        <div id="loading" class="loading">
+            <div style="font-size: 3rem; margin-bottom: 20px;">📊</div>
+            <p>Loading analytics...</p>
+        </div>
+        
+        <div id="analytics-content" style="display:none;">
+            <div class="metrics-grid" id="metrics-grid"></div>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Portfolio Value vs S&P 500</div>
+                    <div class="chart-container">
+                        <canvas id="returnsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">Asset Allocation by Sector</div>
+                    <div class="chart-container">
+                        <canvas id="allocationChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="performers-grid">
+                <div class="performers-card">
+                    <div class="chart-title" style="color: #48bb78;">🟢 Top Gainers</div>
+                    <div id="gainers-list"></div>
+                </div>
+                
+                <div class="performers-card">
+                    <div class="chart-title" style="color: #f56565;">🔴 Top Losers</div>
+                    <div id="losers-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let returnsChart = null;
+        let allocationChart = null;
+        
+        async function loadAnalytics() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('analytics-content').style.display = 'none';
+            
+            try {
+                // Load all analytics
+                const [summary, returns, allocation, performers] = await Promise.all([
+                    fetch('/api/analytics/summary?user_id=demo').then(r => r.json()),
+                    fetch('/api/analytics/returns?user_id=demo&days=30').then(r => r.json()),
+                    fetch('/api/analytics/allocation?user_id=demo').then(r => r.json()),
+                    fetch('/api/analytics/performers?user_id=demo').then(r => r.json())
+                ]);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('analytics-content').style.display = 'block';
+                
+                // Display metrics
+                displayMetrics(summary.summary);
+                
+                // Display returns chart
+                displayReturnsChart(returns.returns);
+                
+                // Display allocation chart
+                displayAllocationChart(allocation.allocation);
+                
+                // Display performers
+                displayPerformers(performers.performers);
+                
+            } catch (error) {
+                document.getElementById('loading').innerHTML = `<div style="color: #f56565;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayMetrics(summary) {
+            const html = `
+                <div class="metric-card">
+                    <div class="metric-label">Total Value</div>
+                    <div class="metric-value">$${summary.total_value.toLocaleString()}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Gain/Loss</div>
+                    <div class="metric-value ${summary.total_gain_loss >= 0 ? 'positive' : 'negative'}">
+                        ${summary.total_gain_loss >= 0 ? '+' : ''}$${summary.total_gain_loss.toLocaleString()} (${summary.total_gain_loss_percent >= 0 ? '+' : ''}${summary.total_gain_loss_percent}%)
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Cash</div>
+                    <div class="metric-value">$${summary.cash.toLocaleString()}</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Positions</div>
+                    <div class="metric-value">${summary.positions_count}</div>
+                </div>
+            `;
+            document.getElementById('metrics-grid').innerHTML = html;
+        }
+        
+        function displayReturnsChart(returns) {
+            const ctx = document.getElementById('returnsChart').getContext('2d');
+            
+            if (returnsChart) {
+                returnsChart.destroy();
+            }
+            
+            returnsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: returns.dates,
+                    datasets: [
+                        {
+                            label: 'Portfolio',
+                            data: returns.values,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'S&P 500',
+                            data: returns.benchmarks,
+                            borderColor: '#f56565',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function displayAllocationChart(allocation) {
+            const ctx = document.getElementById('allocationChart').getContext('2d');
+            
+            if (allocationChart) {
+                allocationChart.destroy();
+            }
+            
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f56565', '#48bb78', '#ecc94b', '#4299e1', '#9f7aea'];
+            
+            allocationChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: allocation.allocation.map(a => a.sector),
+                    datasets: [{
+                        data: allocation.allocation.map(a => a.percentage),
+                        backgroundColor: colors.slice(0, allocation.allocation.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.parsed}%`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function displayPerformers(performers) {
+            // Gainers
+            const gainersHtml = performers.gainers.map(g => `
+                <div class="performer-item">
+                    <div>
+                        <div class="performer-symbol">${g.symbol}</div>
+                        <div style="font-size: 0.75rem; color: #8b949e;">${g.company_name || ''}</div>
+                    </div>
+                    <div class="performer-pnl positive">+${g.pnl_percent}% (+$${g.pnl_value})</div>
+                </div>
+            `).join('') || '<div style="text-align: center; color: #8b949e; padding: 20px;">No gainers</div>';
+            
+            // Losers
+            const losersHtml = performers.losers.map(l => `
+                <div class="performer-item">
+                    <div>
+                        <div class="performer-symbol">${l.symbol}</div>
+                        <div style="font-size: 0.75rem; color: #8b949e;">${l.company_name || ''}</div>
+                    </div>
+                    <div class="performer-pnl negative">${l.pnl_percent}% ($${l.pnl_value})</div>
+                </div>
+            `).join('') || '<div style="text-align: center; color: #8b949e; padding: 20px;">No losers</div>';
+            
+            document.getElementById('gainers-list').innerHTML = gainersHtml;
+            document.getElementById('losers-list').innerHTML = losersHtml;
+        }
+        
+        // Load on page load
+        loadAnalytics();
+        
+        // Auto-refresh every 60 seconds
+        setInterval(loadAnalytics, 60000);
+    </script>
+</body>
+</html>
