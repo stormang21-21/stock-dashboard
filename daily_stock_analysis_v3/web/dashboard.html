@@ -591,28 +591,193 @@
             color: var(--accent-red);
         }
 
-        /* Responsive */
-        @media (max-width: 1400px) {
+        /* Responsive - Tablet Portrait */
+        @media (max-width: 1200px) {
             .stats-grid { grid-template-columns: repeat(2, 1fr); }
             .tools-grid { grid-template-columns: repeat(2, 1fr); }
+            .section .tools-grid[style*="repeat(4"] {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
+        /* Tablet Landscape */
         @media (max-width: 1024px) {
-            .sidebar { width: 80px; padding: 24px 12px; }
+            .sidebar { width: 80px; padding: 20px 10px; }
             .logo-text, .nav-label, .nav-item span:not(.nav-icon), .user-info, .nav-badge { display: none; }
-            .nav-item { justify-content: center; padding: 12px; }
-            .main-content { margin-left: 80px; }
+            .nav-item { justify-content: center; padding: 14px 10px; }
+            .main-content { margin-left: 80px; padding: 24px; }
             .user-card { justify-content: center; }
+            .logo-icon { width: 36px; height: 36px; font-size: 1.25rem; }
+            .stat-card { padding: 20px; }
+            .stat-value { font-size: 1.75rem; }
+            .tool-card { padding: 22px; }
         }
 
+        /* Tablet Portrait */
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
+            .sidebar { 
+                transform: translateX(-100%); 
+                width: 260px;
+                transition: transform 0.3s ease;
+                box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+            }
             .sidebar.active { transform: translateX(0); }
+            .sidebar .logo-text, 
+            .sidebar .nav-label, 
+            .sidebar .nav-item span:not(.nav-icon), 
+            .sidebar .user-info, 
+            .sidebar .nav-badge { display: block; }
+            .sidebar .nav-item { justify-content: flex-start; padding: 12px 16px; }
+            .sidebar .user-card { justify-content: flex-start; padding: 12px 16px; }
+            
             .main-content { margin-left: 0; padding: 20px; }
-            .stats-grid, .tools-grid { grid-template-columns: 1fr; }
-            .header { flex-direction: column; gap: 20px; align-items: flex-start; }
-            .header-actions { width: 100%; }
-            .btn { flex: 1; justify-content: center; }
+            .header { flex-direction: column; gap: 16px; align-items: flex-start; }
+            .header-actions { width: 100%; flex-direction: column; gap: 10px; }
+            .header-actions .btn { width: 100%; justify-content: center; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+            .stat-card { padding: 16px; }
+            .stat-icon { width: 40px; height: 40px; font-size: 1.25rem; margin-bottom: 12px; }
+            .stat-value { font-size: 1.5rem; }
+            .stat-label { font-size: 0.75rem; }
+            .stat-change { font-size: 0.7rem; top: 16px; right: 16px; padding: 2px 6px; }
+            
+            .market-ticker { 
+                padding: 12px 16px; 
+                gap: 16px;
+                border-radius: var(--radius-md);
+            }
+            .ticker-item { gap: 8px; }
+            .ticker-symbol { font-size: 0.8rem; }
+            .ticker-price { font-size: 0.8rem; }
+            .ticker-change { font-size: 0.7rem; padding: 2px 6px; }
+            
+            .quick-actions { grid-template-columns: 1fr; gap: 12px; }
+            .quick-action { padding: 16px; }
+            .quick-action-icon { width: 40px; height: 40px; font-size: 1.1rem; }
+            
+            .tools-grid { grid-template-columns: 1fr; gap: 12px; }
+            .tool-card { padding: 20px; }
+            .tool-icon { width: 48px; height: 48px; font-size: 1.5rem; margin-bottom: 16px; }
+            .tool-card h3 { font-size: 1rem; }
+            .tool-card p { font-size: 0.85rem; }
+            
+            .section .tools-grid[style*="repeat(4"] {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .section-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .section-title { font-size: 1.1rem; }
+            
+            .user-card { margin-top: 12px; }
+        }
+
+        /* Mobile Large */
+        @media (max-width: 540px) {
+            .main-content { padding: 16px; }
+            .header-left h1 { font-size: 1.4rem; }
+            .header-left p { font-size: 0.85rem; }
+            
+            .stats-grid { grid-template-columns: 1fr; }
+            .stat-card { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+            .stat-card .stat-icon { margin-bottom: 0; margin-right: 12px; }
+            .stat-card .stat-value { flex: 1; min-width: 80px; }
+            .stat-card .stat-label { width: 100%; order: 3; }
+            
+            .market-ticker { 
+                display: flex; 
+                overflow-x: auto; 
+                -webkit-overflow-scrolling: touch;
+                scroll-snap-type: x mandatory;
+                padding: 10px 12px;
+            }
+            .market-ticker .ticker-item { 
+                scroll-snap-align: center;
+                flex-shrink: 0;
+            }
+            
+            .section .tools-grid[style*="repeat(4"] {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn { padding: 12px 16px; font-size: 0.85rem; }
+            
+            .sidebar { width: 280px; }
+        }
+
+        /* Mobile Small */
+        @media (max-width: 380px) {
+            :root {
+                --radius-lg: 12px;
+                --radius-md: 8px;
+            }
+            
+            .stat-card { padding: 14px; }
+            .stat-value { font-size: 1.35rem; }
+            .tool-card { padding: 16px; }
+            .tool-icon { width: 42px; height: 42px; font-size: 1.25rem; }
+            .quick-action { padding: 14px; }
+            .quick-action-icon { width: 36px; height: 36px; font-size: 1rem; }
+            .quick-action-text h4 { font-size: 0.9rem; }
+            .quick-action-text p { font-size: 0.75rem; }
+        }
+
+        /* Mobile Menu Toggle Button */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            z-index: 200;
+            width: 44px;
+            height: 44px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .mobile-menu-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--accent-cyan);
+        }
+        
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 90;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .mobile-overlay.active {
+            opacity: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-menu-btn { display: flex; }
+            .mobile-overlay { display: block; }
+            .mobile-overlay.active { pointer-events: auto; }
+        }
+
+        /* Safe area for notched phones */
+        @supports (padding: max(0px)) {
+            .main-content {
+                padding-left: max(16px, env(safe-area-inset-left));
+                padding-right: max(16px, env(safe-area-inset-right));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
         }
 
         /* Animations */
@@ -645,6 +810,13 @@
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('active'); document.querySelector('.mobile-overlay').classList.toggle('active')">
+        ☰
+    </button>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" onclick="document.querySelector('.sidebar').classList.remove('active'); this.classList.remove('active')"></div>
+    
     <div class="app-container">
         <!-- Sidebar -->
         <aside class="sidebar">
