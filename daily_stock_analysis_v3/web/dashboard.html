@@ -557,38 +557,80 @@
         }
 
         /* Market Ticker */
-        .market-ticker {
-            display: flex;
-            gap: 24px;
-            padding: 16px 24px;
+        /* Market Ticker - Animated Scrolling */
+        .ticker-wrapper {
             background: var(--bg-secondary);
             border-radius: var(--radius-lg);
             margin-bottom: 32px;
-            overflow-x: auto;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-label {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            border-right: 1px solid var(--border);
+        }
+
+        .ticker-container {
+            flex: 1;
+            overflow: hidden;
+            padding: 8px 0;
+        }
+
+        .ticker-track {
+            display: flex;
+            gap: 0;
+            animation: ticker-scroll 40s linear infinite;
+            width: max-content;
+        }
+
+        .ticker-track:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
         }
 
         .ticker-item {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            padding: 8px 20px;
             white-space: nowrap;
+            border-right: 1px solid var(--border);
         }
 
         .ticker-symbol {
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: var(--text-primary);
         }
 
         .ticker-price {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
         }
 
         .ticker-change {
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 3px 8px;
             border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .ticker-change.positive {
@@ -599,6 +641,14 @@
         .ticker-change.negative {
             background: rgba(239, 68, 68, 0.15);
             color: var(--accent-red);
+        }
+
+        .ticker-crypto {
+            color: var(--accent-orange);
+        }
+
+        .ticker-stock {
+            color: var(--accent-purple);
         }
 
         /* Responsive - Tablet Portrait */
@@ -931,47 +981,13 @@
                 </div>
             </header>
 
-            <!-- Market Ticker -->
-            <div class="market-ticker">
-                <div class="ticker-item">
-                    <span class="ticker-symbol">SPY</span>
-                    <span class="ticker-price">478.32</span>
-                    <span class="ticker-change positive">+1.24%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">QQQ</span>
-                    <span class="ticker-price">412.85</span>
-                    <span class="ticker-change positive">+1.56%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">BTC</span>
-                    <span class="ticker-price">67,432</span>
-                    <span class="ticker-change negative">-2.31%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">ETH</span>
-                    <span class="ticker-price">3,521</span>
-                    <span class="ticker-change negative">-1.87%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">NVDA</span>
-                    <span class="ticker-price">875.28</span>
-                    <span class="ticker-change positive">+3.12%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">AAPL</span>
-                    <span class="ticker-price">172.45</span>
-                    <span class="ticker-change positive">+0.89%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">TSLA</span>
-                    <span class="ticker-price">168.92</span>
-                    <span class="ticker-change negative">-4.21%</span>
-                </div>
-                <div class="ticker-item">
-                    <span class="ticker-symbol">DBS.SI</span>
-                    <span class="ticker-price">36.82</span>
-                    <span class="ticker-change positive">+0.15%</span>
+            <!-- Market Ticker - Scrolling -->
+            <div class="ticker-wrapper">
+                <div class="ticker-label"><i class="ph ph-trending-up"></i> Top Gainers</div>
+                <div class="ticker-container">
+                    <div class="ticker-track" id="ticker-track">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
 
@@ -1096,3 +1112,39 @@
     </div>
 </body>
 </html>
+    <script>
+        // Market Ticker Data
+        const tickerData = [
+            { symbol: 'NVDA', price: '875.28', change: '+3.12%', positive: true, type: 'stock' },
+            { symbol: 'AMD', price: '178.42', change: '+2.85%', positive: true, type: 'stock' },
+            { symbol: 'BTC', price: '67,432', change: '+1.89%', positive: true, type: 'crypto' },
+            { symbol: 'SPY', price: '478.32', change: '+1.24%', positive: true, type: 'stock' },
+            { symbol: 'ETH', price: '3,521', change: '+1.56%', positive: true, type: 'crypto' },
+            { symbol: 'QQQ', price: '412.85', change: '+1.56%', positive: true, type: 'stock' },
+            { symbol: 'SOL', price: '178.92', change: '+4.21%', positive: true, type: 'crypto' },
+            { symbol: 'AAPL', price: '172.45', change: '+0.89%', positive: true, type: 'stock' },
+            { symbol: 'BNB', price: '612.45', change: '+2.15%', positive: true, type: 'crypto' },
+            { symbol: 'META', price: '485.32', change: '+1.72%', positive: true, type: 'stock' },
+            { symbol: 'DOGE', price: '0.12', change: '+5.67%', positive: true, type: 'crypto' },
+            { symbol: 'MSFT', price: '415.28', change: '+0.95%', positive: true, type: 'stock' },
+            { symbol: 'XRP', price: '0.58', change: '+1.23%', positive: true, type: 'crypto' },
+            { symbol: 'GOOGL', price: '175.82', change: '+1.15%', positive: true, type: 'stock' },
+            { symbol: 'AVAX', price: '42.18', change: '+3.45%', positive: true, type: 'crypto' },
+            { symbol: 'TSLA', price: '168.92', change: '-4.21%', positive: false, type: 'stock' },
+            { symbol: 'COIN', price: '245.68', change: '-1.89%', positive: false, type: 'stock' },
+        ];
+
+        function createTickerItem(item) {
+            return '<div class="ticker-item"><span class="ticker-symbol ticker-' + item.type + '">' + item.symbol + '</span><span class="ticker-price">$' + item.price + '</span><span class="ticker-change ' + (item.positive ? 'positive' : 'negative') + '">' + item.change + '</span></div>';
+        }
+
+        function initTicker() {
+            const track = document.getElementById('ticker-track');
+            if (!track) return;
+            // Duplicate for seamless loop
+            const itemsHTML = tickerData.map(createTickerItem).join('');
+            track.innerHTML = itemsHTML + itemsHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', initTicker);
+    </script>
